@@ -1,0 +1,15 @@
+{
+    "name": "ayman/php-non-profit",
+    "autoload": {
+        "psr-4": {
+            "Ayman\\PhpNonProfit\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "ayman f. ali",
+            "email": "ayman4swd@gmail.com"
+        }
+    ],
+    "require": {}
+}
