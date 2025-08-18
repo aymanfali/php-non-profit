@@ -1,0 +1,19 @@
+{
+    "name": "ayman/php-non-profit",
+    "description": "a backend api for non-profit-org website",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        },
+        "classmap": [
+            "app/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "ayman f. ali",
+            "email": "ayman4swd@gmail.com"
+        }
+    ],
+    "require": {}
+}
