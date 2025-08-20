@@ -1,38 +1,83 @@
 <?php
+
 namespace App\Core;
 
 
 final class Router
 {
-    private static array $routes = ['GET' => [], 'POST' => []];
+    private static array $routes = [];
 
-    public static function get(string $path, $handler): void  { self::$routes['GET'][$path]  = $handler; }
-    public static function post(string $path, $handler): void { self::$routes['POST'][$path] = $handler; }
+    public static function add(string $method, string $path, $handler, array $middleware = []): void
+    {
+        self::$routes[] = compact('method', 'path', 'handler', 'middleware');
+    }
+    public static function get(string $path, $handler, $middleware = []): void
+    {
+        self::add('GET', $path, $handler, $middleware);
+    }
+    public static function post(string $path, $handler, $middleware = []): void
+    {
+        self::add('POST', $path, $handler, $middleware);
+    }
 
     public static function dispatch(string $method, string $uri): void
     {
         $path = parse_url($uri, PHP_URL_PATH) ?: '/';
-        $found = false;
-        foreach (self::$routes[$method] as $route => $handler) {
-            $routePattern = preg_replace('/\{[a-zA-Z0-9_]+\}/', '([a-zA-Z0-9_\-]+)', $route);
-            $routePattern = str_replace('/', '\/', $routePattern);
-            if (preg_match('/^' . $routePattern . '$/', $path, $matches)) {
-                array_shift($matches); // Remove full match
+        foreach (self::$routes as $route) {
+            if ($route['method'] !== $method) continue;
+            $params = self::match($route['path'], $path);
+
+            if ($params !== false) {
+                // middleware
+                foreach ($route['middleware'] as $m) {
+                    if (
+                        $m === 'auth' &&
+                        !\App\Controllers\AuthController::check()
+                    ) {
+                        header('Location: /login');
+
+                        exit;
+                    }
+                }
+                $handler = $route['handler'];
+
                 if (is_array($handler)) {
                     [$class, $action] = $handler;
-                    $result = (new $class())->$action(...$matches);
-                    if (isset($result)) echo $result;
-                } else {
-                    $result = $handler(...$matches);
-                    if (isset($result)) echo $result;
+                    $controller = new $class();
+                    call_user_func_array([$controller, $action], $params);
+                    return;
+                } elseif (is_callable($handler)) {
+                    call_user_func_array($handler, $params);
+
+                    return;
                 }
-                $found = true;
-                break;
             }
         }
-        if (!$found) {
-            http_response_code(404);
-            echo "404 Not Found";
+        http_response_code(404);
+        echo "404 Not Found";
+    }
+
+    private static function match(string $routePath, string $actualPath)
+    {
+        $routePath = rtrim($routePath, '/');
+        $actualPath = rtrim($actualPath, '/');
+        if ($routePath === '') $routePath = '/';
+        if ($actualPath === '') $actualPath = '/';
+        $routeParts = explode('/', trim($routePath, '/'));
+        $pathParts = explode('/', trim($actualPath, '/'));
+        // special case root
+        if ($routePath === '/' && $actualPath === '/') return [];
+        if (count($routeParts) !== count($pathParts)) {
+            return false;
         }
+        $params = [];
+        foreach ($routeParts as $i => $rp) {
+            if (preg_match('/^\{(.+)\}$/', $rp, $m)) {
+                $params[] = $pathParts[$i];
+            } elseif ($rp !== $pathParts[$i]) {
+                return false;
+            }
+        }
+        return $params;
     }
 }

@@ -17,7 +17,7 @@ const currentUser = ref({
     id: '',
     name: '',
     email: '',
-    date: '',
+    created_at: '',
     role: 'user',
 });
 const viewingUser = ref(null);
@@ -65,11 +65,21 @@ function handleDelete(user) {
         cancelText: 'Cancel'
     };
 }
-function handleConfirm() {
-    users.value = users.value.filter(u => u.id !== userToDelete.value.id);
+async function handleConfirm() {
+    if (!userToDelete.value) return;
+    try {
+        const res = await axios.post(`${apiBaseUrl}/users/delete/${userToDelete.value.id}`);
+        if (res.data.success) {
+            users.value = users.value.filter(u => u.id !== userToDelete.value.id);
+            toast.success('User deleted successfully');
+        } else {
+            toast.error(res.data.message || 'Failed to delete user');
+        }
+    } catch (err) {
+        toast.error('Error deleting user');
+    }
     showConfirmModal.value = false;
     userToDelete.value = null;
-    toast.success('User deleted successfully');
 }
 function handleCancel() {
     showConfirmModal.value = false;
@@ -79,11 +89,7 @@ function viewDetails(user) {
     viewingUser.value = { ...user };
 }
 function handleCreate(user) {
-    const userWithId = {
-        ...user,
-        id: Date.now().toString(36) + Math.random().toString(36).substr(2)
-    };
-    users.value.unshift(userWithId);
+    users.value.unshift(user);
     showCreateForm.value = false;
     toast.success('User created successfully');
 }
@@ -92,7 +98,6 @@ function handleUpdate(updatedUser) {
     if (index !== -1) {
         users.value[index] = updatedUser;
         showEditForm.value = false;
-        toast.success('User updated successfully');
     }
 }
 function closeForms() {
@@ -115,11 +120,11 @@ function closeView() {
 
         <Edit v-if="showEditForm" :user="currentUser" @save="handleUpdate" @cancel="closeForms" />
 
-        <Table :headers="['Name', 'Email', 'Role', 'Date']" :items="users" :filterableColumns="[
+        <Table :headers="['Name', 'Email', 'Role', 'Created_At']" :items="users" :filterableColumns="[
             { key: 'name', label: 'Name' },
             { key: 'email', label: 'Email' },
             { key: 'role', label: 'Role' },
-            { key: 'date', label: 'Date', type: 'date' },
+            { key: 'created_at', label: 'Date', type: 'date' },
 
         ]" @edit="handleEdit" @delete="handleDelete" @view="viewDetails" />
 

@@ -29,10 +29,15 @@ class User
         return $stm->fetch();
     }
 
-    function create($name, $email, $role, $password)
+    function create($name, $email, $role = null, $password)
     {
-        $stm = App::db()->prepare("INSERT INTO users(name, email, role, password) VALUES (:name, :email, :role, :password)");
-        $stm->execute(['name' => $name, 'email' => $email, 'role' => $role, 'password' => $password]);
+        if ($role === null) {
+            $stm = App::db()->prepare("INSERT INTO users(name, email, password) VALUES (:name, :email, :password)");
+            $stm->execute(['name' => $name, 'email' => $email, 'password' => $password]);
+        } else {
+            $stm = App::db()->prepare("INSERT INTO users(name, email, role, password) VALUES (:name, :email, :role, :password)");
+            $stm->execute(['name' => $name, 'email' => $email, 'role' => $role, 'password' => $password]);
+        }
     }
 
     function findByEmail($email)

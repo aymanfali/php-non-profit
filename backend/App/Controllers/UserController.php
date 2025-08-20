@@ -6,10 +6,16 @@ use App\Models\User;
 
 class UserController
 {
-    function index()
+    // GET /users or /users/{id}
+    function index($id = null)
     {
         header('Content-Type: application/json');
         $user = new User();
+        if ($id !== null) {
+            $result = $user->find($id);
+            echo json_encode($result);
+            return;
+        }
         if (isset($_GET['search']) && $_GET['search'] !== '') {
             $users = $user->search($_GET['search']);
         } else {
@@ -46,17 +52,16 @@ class UserController
         }
     }
 
-    function update()
+    // POST /users/update/{id}
+    function update($id)
     {
         header('Content-Type: application/json');
-        $id = $_POST['id'] ?? null;
         $name = $_POST['name'] ?? '';
         $email = $_POST['email'] ?? '';
         $role = $_POST['role'] ?? '';
         $password = $_POST['password'] ?? null;
-        if ($id === null || $name === '' || $email === '' || $role === '') {
+        if ($name === '' || $email === '' || $role === '') {
             $input = json_decode(file_get_contents('php://input'), true);
-            $id = $input['id'] ?? $id;
             $name = $input['name'] ?? $name;
             $email = $input['email'] ?? $email;
             $role = $input['role'] ?? $role;
@@ -75,14 +80,10 @@ class UserController
         }
     }
 
-    function delete()
+    // POST /users/delete/{id}
+    function delete($id)
     {
         header('Content-Type: application/json');
-        $id = $_POST['id'] ?? null;
-        if ($id === null) {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $id = $input['id'] ?? null;
-        }
         if ($id) {
             $user = new User();
             $existing = $user->find($id);

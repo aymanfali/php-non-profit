@@ -13,10 +13,19 @@ header("Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
+    exit;
+}
 
-// Create router and include all routes
+// Load config (reads .env)
+$config = require __DIR__ . '/../config/config.php';
+
+// Boot App (DB etc.)
+App\Core\App::init($config);
+
+// Instantiate router and load routes
 $router = new App\Core\Router();
-// require __DIR__ . '/../routes/web.php';
 require __DIR__ . '/../routes/api.php';
 
 // Dispatch current request
