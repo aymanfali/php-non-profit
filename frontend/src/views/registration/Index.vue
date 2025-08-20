@@ -2,6 +2,7 @@
 import PrimaryBtn from '@/components/Dashboard/Buttons/PrimaryBtn.vue';
 import Logo from '@/components/Logo.vue';
 import { useToast } from 'vue-toastification';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default {
     components: {
@@ -29,59 +30,46 @@ export default {
             const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             return re.test(email);
         },
-        handleRegistration() {
+        async handleRegistration() {
             if (!this.username || !this.email || !this.password) {
                 this.toast.error('Please fill all fields');
                 return;
             }
-
             if (!this.validateEmail(this.email)) {
                 this.toast.error('Please enter a valid email');
                 return;
             }
-
             if (this.password.length < 6) {
                 this.toast.error('Password should be at least 6 characters');
                 return;
             }
-
             if (this.password !== this.confirmPassword) {
                 this.toast.error('Passwords do not match');
                 return;
             }
-
             this.isLoading = true;
-
             try {
-                const users = JSON.parse(localStorage.getItem('users')) || [];
-
-                // Check if user already exists
-                const userExists = users.some((u) => u.email === this.email);
-                if (userExists) {
-                    this.toast.error('User already exists with this email');
-                    return;
+                // POST to backend API
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: this.username,
+                        email: this.email,
+                        password: this.password,
+                        password2: this.confirmPassword,
+                        role: this.role
+                    })
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    this.toast.success('Registration Successful');
+                    this.$router.push('/login');
+                } else {
+                    this.toast.error(result.error || 'Registration failed.');
                 }
-
-                // Add new user
-                const newUser = {
-                    name: this.username,
-                    email: this.email,
-                    password: this.password,
-                    role: this.role,
-                };
-
-                users.push(newUser);
-                localStorage.setItem('users', JSON.stringify(users));
-                localStorage.setItem('activeUser', JSON.stringify(newUser));
-
-                this.toast.success("Registration Successful");
-                this.$router.push('/dashboard');
-
-                // Clear form
-                this.username = '';
-                this.email = '';
-                this.password = '';
-                this.confirmPassword = '';
             } catch (error) {
                 this.toast.error('Registration failed. Please try again.');
                 console.error(error);

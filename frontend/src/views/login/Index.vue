@@ -2,6 +2,7 @@
 import PrimaryBtn from '@/components/Dashboard/Buttons/PrimaryBtn.vue';
 import Logo from '@/components/Logo.vue';
 import { useToast } from 'vue-toastification';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default {
     components: {
@@ -14,33 +15,34 @@ export default {
     },
     data() {
         return {
-            email: 'admin@me.com',
-            password: '000000',
+            email: '',
+            password: '',
             showPassword: false // Add this new data property
         }
     },
     methods: {
-        handleLogin() {
-            const users = JSON.parse(localStorage.getItem('users')) || []
-
-            const user = users.find((u) => u.email === this.email & u.password === this.password)
-
-            if (user) {
-                users.forEach(item => {
-                    if (item.email == this.email) {
-                        localStorage.setItem('activeUser', JSON.stringify({
-                            name: item.name,
-                            email: item.email,
-                            role: item.role
-                        }));
-                    }
+        async handleLogin() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: this.email,
+                        password: this.password
+                    }),
+                    credentials: 'include'
                 });
-
-                this.$router.push('/dashboard')
-                this.toast.success("Login Successfull");
-            } else {
-                this.toast.error("Invalid Credintials!");
-                return;
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    this.toast.success('Login Successful');
+                    this.$router.push('/dashboard/');
+                } else {
+                    this.toast.error(result.error || 'Invalid Credentials!');
+                }
+            } catch (error) {
+                this.toast.error('Login failed. Please try again.');
             }
         },
         toggleShowPassword() { // Add this new method

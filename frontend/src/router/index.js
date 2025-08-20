@@ -44,7 +44,7 @@ const router = createRouter({
 
     {
       path: "/dashboard",
-      meta: { requireAuth: true },
+      // meta: { requireAuth: true },
       children: [
         { path: "/dashboard/", component: Dashboard },
         { path: "/dashboard/users", component: AdminUsers },
@@ -58,18 +58,27 @@ const router = createRouter({
   ],
 });
 
-router.beforeEach((to, from, next) => {
-  if (to.meta.requireAuth) {
-    const token = localStorage.getItem('currentUser')
-    const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
-    if (requiresAuth && !token) {
-      next("/login");
-    } else {
-      next()
-    }
-  } else {
-    next();
+router.beforeEach(async (to, from, next) => {
+  const requiresAuth = to.matched.some((record) => record.meta.requireAuth);
+  if (!requiresAuth) {
+    return next();
   }
-})
+  try {
+    const res = await fetch(import.meta.env.VITE_API_BASE_URL + '/auth/check', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    const result = await res.json();
+    console.log('Auth check response:', result);
+    if (res.ok && result.loggedIn) {
+      next();
+    } else {
+      // next('/login');
+    }
+  } catch (e) {
+    console.error('Auth check error:', e);
+    // next('/login');
+  }
+});
 
 export default router;

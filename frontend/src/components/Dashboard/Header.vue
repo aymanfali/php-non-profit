@@ -1,51 +1,64 @@
 <script setup>
-import { useRouter } from 'vue-router';
-import ThemeToggle from '../ThemeToggle.vue';
 import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useToast } from 'vue-toastification';
+import ThemeToggle from '../ThemeToggle.vue';
 import DetailsModal from './DetailsModal.vue';
 import PrimaryBtn from './Buttons/PrimaryBtn.vue';
 
-const router = useRouter()
-const user = ref({})
-const isAccountListOpen = ref(false)
-const isProfileModalOpen = ref(false)
-const toast = useToast()
-
-const emit = defineEmits(['toggle-nav', 'close'])
+const router = useRouter();
+const user = ref({});
+const isAccountListOpen = ref(false);
+const isProfileModalOpen = ref(false);
+const toast = useToast();
+const emit = defineEmits(['toggle-nav', 'close']);
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function toggleAccountList() {
-    isAccountListOpen.value = !isAccountListOpen.value
+    isAccountListOpen.value = !isAccountListOpen.value;
 }
 
 function toggleProfileModal() {
-    isProfileModalOpen.value = !isProfileModalOpen.value
+    isProfileModalOpen.value = !isProfileModalOpen.value;
 }
 
-onMounted(() => {
-    const storedUser = JSON.parse(localStorage.getItem('activeUser'))    
-    if (!storedUser ) {
-        router.push('/login')
-        return
+onMounted(async () => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/check`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const result = await res.json();
+        if (!result.loggedIn) {
+            router.push('/login');
+            return;
+        }
+        // Restrict to admin only
+        if (result.user && result.user.role !== 'admin') {
+            router.push('/');
+            return;
+        }
+        user.value = result.user || {};
+    } catch (e) {
+        router.push('/login');
     }
-
-    if (storedUser.role !== 'admin') {
-        router.push('/')
-        return
-    }
-    user.value = storedUser    
-})
+});
 
 function closeModal() {
-    isProfileModalOpen.value = false
-    emit('close')
+    isProfileModalOpen.value = false;
+    emit('close');
 }
 
-const handleLogout = () => {
-    localStorage.removeItem('activeUser')
-    router.push('/login')
-    toast.success("Logged out successfully!")
-}
+const handleLogout = async () => {
+    try {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+    } catch (e) { }
+    router.push('/login');
+    toast.success("Logged out successfully!");
+};
 
 </script>
 
@@ -61,7 +74,8 @@ const handleLogout = () => {
             </div>
         </div>
         <div class="right flex gap-2.5 items-center">
-            <router-link to="/" class="m-2 cursor-pointer flex items-center bg-bg rounded-md p-2 text-horizontal-line" title="Visit Website">
+            <router-link to="/" class="m-2 cursor-pointer flex items-center bg-bg rounded-md p-2 text-horizontal-line"
+                title="Visit Website">
                 <span class="material-symbols-outlined md:me-2">
                     globe
                 </span>

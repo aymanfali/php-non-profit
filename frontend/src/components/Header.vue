@@ -1,71 +1,65 @@
-<script>
-import { RouterLink, useRouter } from 'vue-router'
-import SearchForm from './Forms/SearchForm.vue'
-import ThemeToggle from './ThemeToggle.vue'
-import PrimaryBtn from './Dashboard/Buttons/PrimaryBtn.vue'
-import DetailsModal from './Dashboard/DetailsModal.vue'
-import { useToast } from 'vue-toastification'
+<script setup>
+import { ref, onMounted } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
+import SearchForm from './Forms/SearchForm.vue';
+import ThemeToggle from './ThemeToggle.vue';
+import PrimaryBtn from './Dashboard/Buttons/PrimaryBtn.vue';
+import DetailsModal from './Dashboard/DetailsModal.vue';
+import { useToast } from 'vue-toastification';
 
-export default {
-    components: {
-        PrimaryBtn,
-        SearchForm,
-        ThemeToggle,
-        DetailsModal
-    },
-    data() {
-        return {
-            isMobileNavOpen: false,
-            isAdmin: false,
-            user: {},
-            isAccountListOpen: false,
-            isProfileModalOpen: false,
-            isLoggedIn: false,
-            toast: useToast()
-        }
-    },
-    created() {
-        this.checkAdminStatus();
-        this.getActiveUser();
-    },
-    methods: {
-        checkAdminStatus() {
-            const activeUser = JSON.parse(localStorage.getItem('activeUser'));
-            this.isAdmin = activeUser && activeUser.role === 'admin';
-            if (activeUser) {
-                this.user = activeUser;
-            }
-        },
-        toggleMobileNav() {
-            this.isMobileNavOpen = !this.isMobileNavOpen;
-        },
-        toggleAccountList() {
-            this.isAccountListOpen = !this.isAccountListOpen;
-        },
-        toggleProfileModal() {
-            this.isProfileModalOpen = !this.isProfileModalOpen;
-        },
-        closeModal() {
-            this.isProfileModalOpen = false;
-        },
-        getActiveUser() {
-            const storedUser = JSON.parse(localStorage.getItem('activeUser'));
-            
+const isMobileNavOpen = ref(false);
+const isAdmin = ref(false);
+const user = ref({});
+const isAccountListOpen = ref(false);
+const isProfileModalOpen = ref(false);
+const isLoggedIn = ref(false);
+const toast = useToast();
+const router = useRouter();
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-            if (storedUser) {
-                this.isLoggedIn = true;
-                return;
-            }
-
-            this.user = storedUser;
-        },
-        handleLogout() {
-            localStorage.removeItem('activeUser');
-            this.$router.push('/login');
-            this.toast.success("Logged out successfully!");
-        }
-    }
+function toggleMobileNav() {
+    isMobileNavOpen.value = !isMobileNavOpen.value;
 }
+function toggleAccountList() {
+    isAccountListOpen.value = !isAccountListOpen.value;
+}
+function toggleProfileModal() {
+    isProfileModalOpen.value = !isProfileModalOpen.value;
+}
+function closeModal() {
+    isProfileModalOpen.value = false;
+}
+const handleLogout = async () => {
+    try {
+        await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+    } catch (e) { }
+    router.push('/login');
+    toast.success("Logged out successfully!");
+};
+
+onMounted(async () => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/check`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const result = await res.json();
+        if (result.loggedIn && result.user) {
+            user.value = result.user;
+            isLoggedIn.value = true;
+            isAdmin.value = result.user.role === 'admin';
+        } else {
+            isLoggedIn.value = false;
+            user.value = {};
+        }
+    } catch (e) {
+        isLoggedIn.value = false;
+        user.value = {};
+    }
+});
 </script>
 <template>
     <div class="main-nav relative flex justify-around items-center bg-primary text-text-sec shadow-2xl p-5">
@@ -123,7 +117,7 @@ export default {
                 <span class="material-symbols-outlined ms-3 cursor-pointer" @click="toggleAccountList">
                     account_circle
                 </span>
-                <span class="cursor-pointer hidden md:block" @click="toggleAccountList">{{ this.user.name }}</span>
+                <span class="cursor-pointer hidden md:block" @click="toggleAccountList">{{ user.name }}</span>
                 <div class="bg-bg p-1 rounded-md absolute top-full right-0 mt-2 shadow-md w-40 z-30"
                     v-if="isAccountListOpen">
                     <button @click="toggleProfileModal"
@@ -146,15 +140,15 @@ export default {
                 <h1 class="text-2xl font-bold m-4 text-text-main">Profile</h1>
                 <div class="grid grid-cols-1 md:grid-cols-5 text-text-main items-center">
                     <p class="rounded-md p-2 pb-0 m-1 font-bold md:text-end">Username :</p>
-                    <span class="rounded-md bg-primary/20 p-2 m-1 w-60"> {{ this.user.name }}</span>
+                    <span class="rounded-md bg-primary/20 p-2 m-1 w-60"> {{ user.name }}</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-5 text-text-main items-center">
                     <p class="rounded-md p-2 pb-0 m-1 font-bold md:text-end">Email :</p>
-                    <span class="rounded-md bg-primary/20 p-2 m-1 w-60"> {{ this.user.email }}</span>
+                    <span class="rounded-md bg-primary/20 p-2 m-1 w-60"> {{ user.email }}</span>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-5 text-text-main items-center">
                     <p class="rounded-md p-2 pb-0 m-1 font-bold md:text-end">Role :</p>
-                    <span class="rounded-md bg-primary/20 p-2 m-1 w-60"> {{ this.user.role }}</span>
+                    <span class="rounded-md bg-primary/20 p-2 m-1 w-60"> {{ user.role }}</span>
                 </div>
                 <div class="mt-6 flex justify-end">
                     <PrimaryBtn @click="closeModal" name="Close" />
