@@ -2,68 +2,77 @@
 
 namespace App\Controllers;
 
+use App\Core\App;
+use App\Core\Controller;
 use App\Core\DotEnv;
+use App\Core\Logger;
+use App\Core\Session;
 use App\Models\User;
 
-class AuthController 
+class AuthController extends Controller
 {
+    public static function check(): bool
+    {
+        return (bool)(Session::get('user_id') ?? false);
+    }
+
     public function showLogin()
     {
-        return $this->view('login');
+        $error = Session::getFlash('error');
+        $this->view('auth/login', ['error' => $error]);
     }
     public function login()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $userModel = new User();
-            $user = $userModel->findByEmail($email);
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['user_id'] = $user['id'];
-                header('Location:' . DotEnv::env('APP_URL') . '/users');
-                exit;
-            } else {
-                $_SESSION['error'] = 'Invalid credentials.';
-                header('Location:' . DotEnv::env('APP_URL') . '/users');
-                exit;
-            }
+        $this->validateCsrfOrDie();
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        if ($email === '' || $password === '') {
+            Session::flash('error', 'Email and password are required.');
+            $this->redirect('/login');
         }
-        return $this->view('login');
+        $userModel = new User();
+        $user = $userModel->findByEmail($email);
+        if ($user && password_verify($password, $user['password'])) {
+            Session::set('user_id', (int)$user['id']);
+            Session::set('user_name', $user['name']);
+            Logger::log("User {$user['email']} logged in.");
+            $this->redirect('/students');
+        }
+        Session::flash('error', 'Invalid credentials.');
+        $this->redirect('/login');
     }
     public function showRegister()
     {
-        return $this->view('register');
+        $error = Session::getFlash('error');
+        $this->view('auth/register', ['error' => $error]);
     }
 
     public function register()
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $email = $_POST['email'] ?? '';
-            $password = $_POST['password'] ?? '';
-            $confirm_password = $_POST['confirm_password'] ?? '';
-            $userModel = new User();
-            if ($userModel->findByEmail($email)) {
-                $_SESSION['error'] = 'Email already exists.';
-                header('Location:' . DotEnv::env('APP_URL') . '/users');
-                exit;
-            }
-            if ($password !== $confirm_password) {
-                $_SESSION['error'] = 'Passwords do not match.';
-                header('Location:' . DotEnv::env('APP_URL') . '/auth/register');
-                exit;
-            }
-            if (strlen($password) < 6) {
-                $_SESSION['error'] = 'Password must be at least 6 characters.';
-                header('Location:' . DotEnv::env('APP_URL') . '/auth/register');
-                exit;
-            }
-            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-            $userModel->create($email, $hashedPassword);
-            $_SESSION['success'] = 'Registration successful. Please login.';
-            header('Location:' . DotEnv::env('APP_URL') . '/users');
-            exit;
+        $this->validateCsrfOrDie();
+        $name = trim($_POST['name'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $password = $_POST['password'] ?? '';
+        $password2 = $_POST['password2'] ?? '';
+        if ($name === '' || $email === '' || $password === '') {
+            Session::flash('error', 'Please fill required fields.');
+            $this->redirect('/register');
         }
-        return $this->view('register');
+        if ($password !== $password2) {
+            Session::flash('error', 'Passwords do not match.');
+            $this->redirect('/register');
+        }
+        $userModel = new User();
+        if ($userModel->findByEmail($email)) {
+            Session::flash('error', 'Email already exists.');
+            $this->redirect('/register');
+        }
+        $hash = password_hash($password, PASSWORD_DEFAULT);
+        // If role is not required, pass null or default value
+        $userModel->create($name, $email, null, $hash);
+        Logger::log("New user registered: $email");
+        Session::flash('success', 'Account created. Please login.');
+        $this->redirect('/login');
     }
     public function logout()
     {
@@ -71,9 +80,5 @@ class AuthController
         session_destroy();
         header('Location' . DotEnv::env('APP_URL') . '/auth/login');
         exit;
-    }
-    private function view($view)
-    {
-        include __DIR__ . '/../Views/auth/' . $view . '.php';
     }
 }
