@@ -1,54 +1,62 @@
-<script>
+<script setup>
+import { onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 import PrimaryBtn from '@/components/Dashboard/Buttons/PrimaryBtn.vue';
 import Logo from '@/components/Logo.vue';
-import { useToast } from 'vue-toastification';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default {
-    components: {
-        PrimaryBtn,
-        Logo
-    },
-    setup() {
-        const toast = useToast();
-        return { toast }
-    },
-    data() {
-        return {
-            email: '',
-            password: '',
-            showPassword: false // Add this new data property
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const email = ref('');
+const password = ref('');
+const showPassword = ref(false);
+const toast = useToast();
+const router = useRouter();
+
+onMounted(async () => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/check`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const result = await res.json();
+        if (result.loggedIn) {
+            router.push('/');
+            return;
         }
-    },
-    methods: {
-        async handleLogin() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        email: this.email,
-                        password: this.password
-                    }),
-                    credentials: 'include'
-                });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    this.toast.success('Login Successful');
-                    this.$router.push('/dashboard/');
-                } else {
-                    this.toast.error(result.error || 'Invalid Credentials!');
-                }
-            } catch (error) {
-                this.toast.error('Login failed. Please try again.');
-            }
-        },
-        toggleShowPassword() { // Add this new method
-            this.showPassword = !this.showPassword;
-        }
+    } catch (e) {
+        // If error, stay on login page
+        
     }
+});
+
+
+async function handleLogin() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email.value,
+                password: password.value
+            }),
+            credentials: 'include'
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            toast.success('Login Successful');
+            router.push('/dashboard/');
+        } else {
+            toast.error(result.error || 'Invalid Credentials!');
+        }
+    } catch (error) {
+        toast.error('Login failed. Please try again.');
+    }
+}
+
+function toggleShowPassword() {
+    showPassword.value = !showPassword.value;
 }
 </script>
 
@@ -68,12 +76,12 @@ export default {
                         required>
                     <button type="button" @click="toggleShowPassword"
                         class="absolute right-4 top-1/2 transform -translate-y-1/2 text-sm text-horizontal-line hover:text-text-main focus:outline-none">
-                        <div class="" v-if="showPassword">
+                        <div v-if="showPassword">
                             <span class="material-symbols-outlined">
                                 visibility
                             </span>
                         </div>
-                        <div class="" v-else>
+                        <div v-else>
                             <span class="material-symbols-outlined">
                                 visibility_off
                             </span>

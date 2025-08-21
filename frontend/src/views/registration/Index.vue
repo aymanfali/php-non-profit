@@ -1,89 +1,96 @@
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'vue-toastification';
 import PrimaryBtn from '@/components/Dashboard/Buttons/PrimaryBtn.vue';
 import Logo from '@/components/Logo.vue';
-import { useToast } from 'vue-toastification';
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default {
-    components: {
-        PrimaryBtn,
-        Logo
-    },
-    setup() {
-        const toast = useToast();
-        return { toast }
-    },
-    data() {
-        return {
-            username: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
-            role: 'user',
-            isLoading: false,
-            showPassword: false, // Added for password visibility toggle
-            showConfirmPassword: false // Added for confirm password visibility toggle
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+const username = ref('');
+const email = ref('');
+const password = ref('');
+const confirmPassword = ref('');
+const role = ref('user');
+const isLoading = ref(false);
+const showPassword = ref(false);
+const showConfirmPassword = ref(false);
+const toast = useToast();
+const router = useRouter();
+
+onMounted(async () => {
+    try {
+        const res = await fetch(`${API_BASE_URL}/auth/check`, {
+            method: 'GET',
+            credentials: 'include'
+        });
+        const result = await res.json();
+        if (result.loggedIn) {
+            router.push('/');
+            return;
         }
-    },
-    methods: {
-        validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(email);
-        },
-        async handleRegistration() {
-            if (!this.username || !this.email || !this.password) {
-                this.toast.error('Please fill all fields');
-                return;
-            }
-            if (!this.validateEmail(this.email)) {
-                this.toast.error('Please enter a valid email');
-                return;
-            }
-            if (this.password.length < 6) {
-                this.toast.error('Password should be at least 6 characters');
-                return;
-            }
-            if (this.password !== this.confirmPassword) {
-                this.toast.error('Passwords do not match');
-                return;
-            }
-            this.isLoading = true;
-            try {
-                // POST to backend API
-                const response = await fetch(`${API_BASE_URL}/auth/register`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        name: this.username,
-                        email: this.email,
-                        password: this.password,
-                        password2: this.confirmPassword,
-                        role: this.role
-                    })
-                });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    this.toast.success('Registration Successful');
-                    this.$router.push('/login');
-                } else {
-                    this.toast.error(result.error || 'Registration failed.');
-                }
-            } catch (error) {
-                this.toast.error('Registration failed. Please try again.');
-                console.error(error);
-            } finally {
-                this.isLoading = false;
-            }
-        },
-        togglePasswordVisibility() { // Added for password toggle
-            this.showPassword = !this.showPassword;
-        },
-        toggleConfirmPasswordVisibility() { // Added for confirm password toggle
-            this.showConfirmPassword = !this.showConfirmPassword;
-        }
+    } catch (e) {
+        // If error, stay on registration page
     }
+});
+
+function validateEmail(emailVal) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(emailVal);
+}
+
+async function handleRegistration() {
+    if (!username.value || !email.value || !password.value) {
+        toast.error('Please fill all fields');
+        return;
+    }
+    if (!validateEmail(email.value)) {
+        toast.error('Please enter a valid email');
+        return;
+    }
+    if (password.value.length < 6) {
+        toast.error('Password should be at least 6 characters');
+        return;
+    }
+    if (password.value !== confirmPassword.value) {
+        toast.error('Passwords do not match');
+        return;
+    }
+    isLoading.value = true;
+    try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: username.value,
+                email: email.value,
+                password: password.value,
+                password2: confirmPassword.value,
+                role: role.value
+            })
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            toast.success('Registration Successful');
+            router.push('/login');
+        } else {
+            toast.error(result.error || 'Registration failed.');
+        }
+    } catch (error) {
+        toast.error('Registration failed. Please try again.');
+        console.error(error);
+    } finally {
+        isLoading.value = false;
+    }
+}
+
+function togglePasswordVisibility() {
+    showPassword.value = !showPassword.value;
+}
+
+function toggleConfirmPasswordVisibility() {
+    showConfirmPassword.value = !showConfirmPassword.value;
 }
 </script>
 
