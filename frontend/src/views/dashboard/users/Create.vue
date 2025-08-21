@@ -31,9 +31,6 @@ export default {
         }
     },
     methods: {
-        generateUniqueId() {
-            return Date.now().toString(36) + Math.random().toString(36).substring(2);
-        },
         validateForm() {
             this.errors = {};
             let isValid = true;

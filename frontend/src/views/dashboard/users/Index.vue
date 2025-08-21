@@ -89,9 +89,13 @@ function viewDetails(user) {
     viewingUser.value = { ...user };
 }
 function handleCreate(user) {
-    users.value.unshift(user);
-    showCreateForm.value = false;
-    toast.success('User created successfully');
+    try {
+        users.value.unshift(user);
+        showCreateForm.value = false;
+        toast.success('User created successfully');
+    } catch (error) {
+        toast.error('Failed to create user');
+    }
 }
 function handleUpdate(updatedUser) {
     const index = users.value.findIndex(u => u.id === currentUser.value.id);
