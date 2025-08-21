@@ -33,19 +33,22 @@ watch(() => props.user, (newUser) => {
 
 async function handleSubmit() {
     if (validateForm()) {
-        const userData = {
-            ...localUser.value,
-            ...(password.value ? { password: password.value } : {})
-        };
+        // Only include fields with non-empty values
+        const userData = {};
+        if (localUser.value.name && localUser.value.name.trim() !== '') userData.name = localUser.value.name;
+        if (localUser.value.email && localUser.value.email.trim() !== '') userData.email = localUser.value.email;
+        if (localUser.value.role && localUser.value.role.trim() !== '') userData.role = localUser.value.role;
+        if (password.value && password.value.trim() !== '') userData.password = password.value;
+        // Always include id for update
+        userData.id = localUser.value.id;
         try {
-            // Use your backend API endpoint for update
             const apiBase = import.meta.env.VITE_API_BASE_URL;
             const res = await axios.post(`${apiBase}/users/update/${localUser.value.id}`, userData);
             if (res.data.success) {
                 toast.success('User updated successfully');
-                emit('save', userData); // Optionally emit for parent update
+                emit('save', userData);
             } else {
-                toast.error(res.data.message || 'Update failed');
+                toast.error('Update failed');
             }
         } catch (err) {
             toast.error('Error updating user');
@@ -116,8 +119,7 @@ function togglePasswordVisibility(field) {
 
                 <!-- New Password Fields -->
                 <div class="mb-4">
-                    <label class="block text-text-main mb-2" for="password">New Password (leave blank to keep
-                        current)</label>
+                    <label class="block text-text-main mb-2" for="password">New Password</label>
                     <div class="relative">
                         <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'"
                             class="w-full px-3 py-2 bg-primary/20 outline-0 rounded pr-10" placeholder="Enter new password" />

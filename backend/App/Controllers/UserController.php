@@ -68,9 +68,19 @@ class UserController
             $password = $input['password'] ?? $password;
         }
         $user = new User();
+        if ($password === '') {
+            $password = null;
+        }
         if ($id) {
-            if ($password) {
-                $user->update($id, $name, $email, $role, password_hash($password, PASSWORD_DEFAULT));
+            $existing = $user->find($id);
+            // Only update password if not empty and not null
+            if ($password !== null) {
+                // If password matches current hash, skip update
+                if (isset($existing['password']) && password_verify($password, $existing['password'])) {
+                    $user->update($id, $name, $email, $role);
+                } else {
+                    $user->update($id, $name, $email, $role, password_hash($password, PASSWORD_DEFAULT));
+                }
             } else {
                 $user->update($id, $name, $email, $role);
             }
