@@ -1,4 +1,5 @@
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import Table from '@/components/Dashboard/Table.vue';
 import AuthLayout from '../AuthLayout.vue';
 import PrimaryBtn from '@/components/Dashboard/Buttons/PrimaryBtn.vue';
@@ -6,125 +7,113 @@ import Create from './Create.vue';
 import Edit from './Edit.vue';
 import View from './View.vue';
 import { useToast } from 'vue-toastification';
-import { defineAsyncComponent } from 'vue';
+import axios from 'axios';
+import ConfirmModal from '@/components/Dashboard/ConfirmModal.vue';
 
-export default {
-    setup() {
-        const toast = useToast();
-        return { toast }
-    },
-    components: {
-        Table,
-        AuthLayout,
-        PrimaryBtn,
-        Create,
-        Edit,
-        View,
-        ConfirmModal: defineAsyncComponent(() => import('@/components/Dashboard/ConfirmModal.vue'))
-    },
-    data() {
-        return {
-            impacts: [],
-            showCreateForm: false,
-            showEditForm: false,
-            currentImpact: {
-                title: '',
-                image: '',
-                date: ''
-            },
-            viewingImpact: null,
-            showConfirmModal: false,
-            confirmModalConfig: {
-                title: '',
-                message: '',
-                confirmText: 'Confirm',
-                cancelText: 'Cancel'
-            },
-            impactToDelete: null
-        }
-    },
-    created() {
-        this.loadImpacts();
-    },
-    methods: {
-        loadImpacts() {
-            const savedImpacts = localStorage.getItem('impacts');
-            if (savedImpacts) {
-                this.impacts = JSON.parse(savedImpacts);
-            }
-        },
-        saveImpacts() {
-            localStorage.setItem('impacts', JSON.stringify(this.impacts));
-        },
-        handleAdd() {
-            this.showCreateForm = true;
-            this.showEditForm = false;
-        },
-        handleEdit(impact) {
-            this.currentImpact = { ...impact };
-            this.showEditForm = true;
-            this.showCreateForm = false;
-        },
-        handleDelete(impact) {
-            this.impactToDelete = impact;
-            this.showConfirmModal = true;
-            this.confirmModalConfig = {
-                title: 'Delete Impact',
-                message: 'Are you sure you want to delete this impact?',
-                confirmText: 'Delete',
-                cancelText: 'Cancel'
-            };
-        },
-        handleConfirm() {
-            try {
-                this.impacts = this.impacts.filter(i => i.title !== this.impactToDelete.title);
-                this.saveImpacts();
-                this.toast.success('Impact deleted successfully');
-                this.showConfirmModal = false;
-                this.impactToDelete = null;
-            } catch (error) {
-                this.toast.error('Failed to delete impact');
-            }
-        },
-        handleCancel() {
-            this.showConfirmModal = false;
-            this.impactToDelete = null;
-        },
-        viewDetails(impact) {
-            this.viewingImpact = { ...impact };
-        },
-        handleCreate(impact) {
-            try {
-                this.impacts.unshift(impact);
-                this.saveImpacts();
-                this.showCreateForm = false;
-                this.toast.success('Impact created successfully');
-            } catch (error) {
-                this.toast.error('Failed to create impact');
-            }
-        },
-        handleUpdate(impact) {
-            try {
-                const index = this.impacts.findIndex(i => i.title === this.currentImpact.title);
-                if (index !== -1) {
-                    this.impacts[index] = impact;
-                }
-                this.saveImpacts();
-                this.showEditForm = false;
-                this.toast.success('Impact updated successfully');
-            } catch (error) {
-                this.toast.error('Failed to update impact');
-            }
-        },
-        closeForms() {
-            this.showCreateForm = false;
-            this.showEditForm = false;
-        },
-        closeView() {
-            this.viewingImpact = null;
-        }
+
+const toast = useToast();
+
+const showCreateForm = ref(false);
+const showEditForm = ref(false);
+const currentImpact = ref({
+    id: '',
+    title: '',
+    image: '',
+    created_at: ''
+});
+const viewingImpact = ref(null);
+const showConfirmModal = ref(false);
+const confirmModalConfig = ref({
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel'
+});
+const impactToDelete = ref(null);
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const impacts = ref([]);
+async function fetchImpacts() {
+    try {
+        const res = await axios.get(`${apiBaseUrl}/impacts`);
+        impacts.value = res.data;
+    } catch (err) {
+        impacts.value = [];
+        toast.error('Failed to fetch impacts');
     }
 }
+
+onMounted(fetchImpacts);
+
+function handleAdd() {
+    showCreateForm.value = true;
+    showEditForm.value = false;
+}
+function handleEdit(impact) {
+    currentImpact.value = { ...impact }
+    showEditForm.value = true;
+    showCreateForm.value = false;
+}
+function handleDelete(impact) {
+    impactToDelete.value = impact;
+    showConfirmModal.value = true;
+    confirmModalConfig.value = {
+        title: 'Delete user',
+        message: `Are you sure you want to delete ${impact.title}?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+    };
+}
+async function handleConfirm() {
+    try {
+        const res = await axios.post(`${apiBaseUrl}/impacts/delete/${impactToDelete.value.id}`)
+        if (res.data.success) {
+            impacts.value = impacts.value.filter(i => i.id !== impactToDelete.value.id);
+            toast.success('Impact deleted successfully.');
+        } else {
+            toast.error('Error deleting impact');
+        }
+    } catch (error) {
+        toast.error('Failed to delete impact');
+    }
+    showConfirmModal.value = false;
+    impactToDelete.value = null;
+}
+function handleCancel() {
+    showConfirmModal.value = false;
+    impactToDelete.value = null;
+}
+function viewDetails(impact) {
+    viewingImpact.value = { ...impact };
+}
+function handleCreate(impact) {
+    try {
+        impacts.value.unshift(impact);
+        showCreateForm.value = false;
+    } catch (error) {
+        toast.error('Failed to create impact');
+    }
+}
+function handleUpdate(impact) {
+    try {
+        const index = impacts.value.findIndex(i => i.id === currentImpact.value.id);
+        if (index !== -1) {
+            impacts.value[index] = impact;
+            showEditForm.value = false;
+        }
+        toast.success('Impact updated successfully');
+    } catch (error) {
+        toast.error('Failed to update impact');
+    }
+}
+function closeForms() {
+    showCreateForm.value = false;
+    showEditForm.value = false;
+}
+function closeView() {
+    viewingImpact.value = null;
+}
+
 </script>
 
 <template>
@@ -136,10 +125,10 @@ export default {
 
         <Create v-if="showCreateForm" @save="handleCreate" @cancel="closeForms" />
         <Edit v-if="showEditForm" :impact="currentImpact" @save="handleUpdate" @cancel="closeForms" />
-        <Table :headers="['Title', 'Image', 'Date']" :items="impacts" @edit="handleEdit" @delete="handleDelete"
+        <Table :headers="['Title', 'Image', 'Created_At']" :items="impacts" @edit="handleEdit" @delete="handleDelete"
             @view="viewDetails" :filterableColumns="[
                 { key: 'title', label: 'Title' },
-                { key: 'date', label: 'Date', type: 'date' },
+                { key: 'created_at', label: 'Date', type: 'date' },
             ]" />
 
         <View v-if="viewingImpact" :impact="viewingImpact" @close="closeView" />

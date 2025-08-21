@@ -33,13 +33,11 @@ watch(() => props.user, (newUser) => {
 
 async function handleSubmit() {
     if (validateForm()) {
-        // Only include fields with non-empty values
         const userData = {};
         if (localUser.value.name && localUser.value.name.trim() !== '') userData.name = localUser.value.name;
         if (localUser.value.email && localUser.value.email.trim() !== '') userData.email = localUser.value.email;
         if (localUser.value.role && localUser.value.role.trim() !== '') userData.role = localUser.value.role;
         if (password.value && password.value.trim() !== '') userData.password = password.value;
-        // Always include id for update
         userData.id = localUser.value.id;
         try {
             const apiBase = import.meta.env.VITE_API_BASE_URL;
