@@ -1,4 +1,5 @@
-<script>
+<script setup>
+import { ref, onMounted } from 'vue';
 import Table from '@/components/Dashboard/Table.vue';
 import AuthLayout from '../AuthLayout.vue';
 import PrimaryBtn from '@/components/Dashboard/Buttons/PrimaryBtn.vue';
@@ -6,133 +7,115 @@ import Create from './Create.vue';
 import Edit from './Edit.vue';
 import View from './View.vue';
 import { useToast } from 'vue-toastification';
-import { defineAsyncComponent } from 'vue';
+import axios from 'axios';
+import ConfirmModal from '@/components/Dashboard/ConfirmModal.vue';
 
-export default {
-    setup() {
-        const toast = useToast();
-        return { toast }
-    },
-    components: {
-        Table,
-        AuthLayout,
-        PrimaryBtn,
-        Create,
-        Edit,
-        View,
-        ConfirmModal: defineAsyncComponent(() => import('@/components/Dashboard/ConfirmModal.vue'))
-    },
-    data() {
-        return {
-            news: [],
-            showCreateForm: false,
-            showEditForm: false,
-            currentNews: {
-                title: '',
-                image: '',
-                date: ''
-            },
-            viewingNews: null,
 
-            showConfirmModal: false,
-            confirmModalConfig: {
-                title: '',
-                message: '',
-                confirmText: 'Confirm',
-                cancelText: 'Cancel'
-            },
-            NewsToDelete: null
-        }
-    },
-    created() {
-        this.loadNews();
-    },
-    methods: {
-        loadNews() {
-            const savedNews = localStorage.getItem('news');
-            if (savedNews) {
-                this.news = JSON.parse(savedNews);
-            }
-        },
-        saveNews() {
-            localStorage.setItem('news', JSON.stringify(this.news));
-        },
-        handleAdd() {
-            this.showCreateForm = true;
-            this.showEditForm = false;
-        },
-        handleEdit(news) {
-            this.currentNews = { ...news };
-            this.showEditForm = true;
-            this.showCreateForm = false;
-        },
-        handleDelete(news) {
-            this.NewsToDelete = news
-            this.showConfirmModal = true
-            this.confirmModalConfig = {
-                title: 'Delete News',
-                message: 'Are you sure you want to delete this News?',
-                confirmText: 'Delete',
-                cancelText: 'Cancel'
-            }
-        },
-        handleConfirm() {
-            try {
-                this.news = this.news.filter(i => i.title !== this.NewsToDelete.title);
-                this.saveNews();
-                this.toast.success('News deleted successfully');
-                this.showConfirmModal = false;
-                this.NewsToDelete = null;
-            } catch (error) {
-                this.toast.error('Failed to delete News');
-            }
-        },
-        handleCancel() {
-            this.showConfirmModal = false;
-            this.NewsToDelete = null;
-        },
-        viewDetails(news) {
-            this.viewingNews = { ...news };
-        },
-        handleCreate(news) {
-            try {
-                this.news.unshift(news);
-                this.saveNews();
-                this.showCreateForm = false;
-                this.toast.success('News created successfully');
-            } catch (error) {
-                this.toast.error('Failed to create news');
-            }
-        },
-        handleUpdate(news) {
-            try {
-                const index = this.news.findIndex(i => i.title === this.currentNews.title);
-                if (index !== -1) {
-                    this.news[index] = news;
-                }
-                this.saveNews();
-                this.showEditForm = false;
-                this.toast.success('News updated successfully');
-            } catch (error) {
-                this.toast.error('Failed to update news');
-            }
-        },
-        closeForms() {
-            this.showCreateForm = false;
-            this.showEditForm = false;
-        },
-        closeView() {
-            this.viewingNews = null;
-        },
-        showConfirmDialog(message) {
-            return new Promise((resolve) => {
-                const confirmed = window.confirm(message);
-                resolve(confirmed);
-            });
-        }
+const toast = useToast();
+
+const showCreateForm = ref(false);
+const showEditForm = ref(false);
+const currentNews = ref({
+    id: '',
+    title: '',
+    image: '',
+    created_at: ''
+});
+const viewingNews = ref(null);
+const showConfirmModal = ref(false);
+const confirmModalConfig = ref({
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel'
+});
+const newsToDelete = ref(null);
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const news = ref([]);
+async function fetchNews() {
+    try {
+        const res = await axios.get(`${apiBaseUrl}/news`);
+        news.value = res.data;
+    } catch (err) {
+        news.value = [];
+        toast.error('Failed to fetch news');
     }
 }
+
+onMounted(fetchNews);
+
+function handleAdd() {
+    showCreateForm.value = true;
+    showEditForm.value = false;
+}
+function handleEdit(news) {
+    currentNews.value = { ...news }
+    showEditForm.value = true;
+    showCreateForm.value = false;
+}
+function handleDelete(news) {
+    newsToDelete.value = news;
+    showConfirmModal.value = true;
+    confirmModalConfig.value = {
+        title: 'Delete user',
+        message: `Are you sure you want to delete ${news.title}?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+    };
+}
+async function handleConfirm() {
+    try {
+        const res = await axios.post(`${apiBaseUrl}/news/delete/${newsToDelete.value.id}`)
+        if (res.data.success) {
+            news.value = news.value.filter(i => i.id !== newsToDelete.value.id);
+            toast.success('News deleted successfully.');
+        } else {
+            toast.error('Error deleting news');
+        }
+    } catch (error) {
+        toast.error('Failed to delete news');
+    }
+    showConfirmModal.value = false;
+    newsToDelete.value = null;
+}
+function handleCancel() {
+    showConfirmModal.value = false;
+    newsToDelete.value = null;
+}
+function viewDetails(news) {
+    viewingNews.value = { ...news };
+}
+function handleCreate(_news) {
+    try {
+        news.value.unshift(_news);
+        showCreateForm.value = false;
+    } catch (error) {
+        toast.error('Failed to create news');
+    }
+}
+function handleUpdate(_news) {
+    try {
+        const index = news.value.findIndex(i => i.id === currentNews.value.id);
+        if (index !== -1) {
+            news.value[index] = _news;
+            showEditForm.value = false;
+        }
+        toast.success('News updated successfully');
+    } catch (error) {
+        toast.error('Failed to update news');
+    }
+}
+function closeForms() {
+    showCreateForm.value = false;
+    showEditForm.value = false;
+}
+function closeView() {
+    viewingNews.value = null;
+}
+
 </script>
+
 
 <template>
     <AuthLayout>
@@ -145,9 +128,9 @@ export default {
 
         <Edit v-if="showEditForm" :news="currentNews" @save="handleUpdate" @cancel="closeForms" />
 
-        <Table :headers="['Title', 'Image', 'Date']" :items="news" :filterableColumns="[
+        <Table :headers="['Title', 'Image', 'Created_At']" :items="news" :filterableColumns="[
             { key: 'title', label: 'Title' },
-            { key: 'date', label: 'Date', type: 'date' },
+            { key: 'created_at', label: 'Created_At', type: 'date' },
         ]" @edit="handleEdit" @delete="handleDelete" @view="viewDetails" />
 
         <View v-if="viewingNews" :news="viewingNews" @close="closeView" />

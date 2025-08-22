@@ -3,6 +3,7 @@
 use App\Controllers\AuthController;
 use App\Controllers\Dashboard\DashboardHomeController;
 use App\Controllers\Dashboard\DashboardImpactController;
+use App\Controllers\Dashboard\DashboardNewsController;
 use App\Controllers\HomeController;
 use App\Controllers\UserController;
 use App\Core\DotEnv;
@@ -29,4 +30,10 @@ Router::get(DotEnv::env('APP_URL') . '/impacts/{id}', [DashboardImpactController
 Router::post(DotEnv::env('APP_URL') . '/impacts', [DashboardImpactController::class, 'store']); 
 Router::post(DotEnv::env('APP_URL') . '/impacts/update/{id}', [DashboardImpactController::class, 'update']); 
 Router::post(DotEnv::env('APP_URL') . '/impacts/delete/{id}', [DashboardImpactController::class, 'delete']);
+
+Router::get(DotEnv::env('APP_URL') . '/news', [DashboardNewsController::class, 'index']); 
+Router::get(DotEnv::env('APP_URL') . '/news/{id}', [DashboardNewsController::class, 'index']);
+Router::post(DotEnv::env('APP_URL') . '/news', [DashboardNewsController::class, 'store']); 
+Router::post(DotEnv::env('APP_URL') . '/news/update/{id}', [DashboardNewsController::class, 'update']); 
+Router::post(DotEnv::env('APP_URL') . '/news/delete/{id}', [DashboardNewsController::class, 'delete']);
 
