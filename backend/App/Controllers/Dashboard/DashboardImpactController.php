@@ -38,12 +38,12 @@ class DashboardImpactController extends Controller
             $content = $input['content'] ?? $content;
         }
         if ($title && $image && $content) {
-            $impact->create(
+            $created = $impact->create(
                 $title,
                 $image,
                 $content,
             );
-            echo json_encode(['success' => true, 'message' => 'impact created successfully.']);
+            echo json_encode(['success' => true, 'message' => 'impact created successfully.', 'impact' => $created]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
         }

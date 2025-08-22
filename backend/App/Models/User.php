@@ -38,6 +38,8 @@ class User
             $stm = App::db()->prepare("INSERT INTO users(name, email, role, password) VALUES (:name, :email, :role, :password)");
             $stm->execute(['name' => $name, 'email' => $email, 'role' => $role, 'password' => $password]);
         }
+        $id = App::db()->lastInsertId();
+        return $this->find($id);
     }
 
     function findByEmail($email)

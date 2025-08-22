@@ -31,6 +31,8 @@ class Impacts
     {
         $stm = App::db()->prepare("INSERT INTO impacts(title, image, content) VALUES (:title, :image, :content)");
         $stm->execute(['title' => $title, 'image' => $image, 'content' => $content]);
+        $id = App::db()->lastInsertId();
+        return $this->find($id);
     }
 
     function update($id, $title, $image, $content = null)

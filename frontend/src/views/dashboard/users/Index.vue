@@ -92,7 +92,6 @@ function handleCreate(user) {
     try {
         users.value.unshift(user);
         showCreateForm.value = false;
-        toast.success('User created successfully');
     } catch (error) {
         toast.error('Failed to create user');
     }

@@ -40,13 +40,13 @@ class UserController
             $password = $input['password'] ?? $password;
         }
         if ($name && $email && $role && $password) {
-            $user->create(
+            $created = $user->create(
                 $name,
                 $email,
                 $role,
                 password_hash($password, PASSWORD_DEFAULT)
             );
-            echo json_encode(['success' => true, 'message' => 'User created successfully.']);
+            echo json_encode(['success' => true, 'message' => 'User created successfully.', 'user' => $created]);
         } else {
             echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
         }
