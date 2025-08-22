@@ -3,7 +3,7 @@
 namespace App\Controllers\Dashboard;
 
 use App\Core\Controller;
-use Impacts;
+use App\Models\Impacts;
 
 class DashboardImpactController extends Controller
 {
