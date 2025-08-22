@@ -1,101 +1,83 @@
-<script>
+<script setup>
 import Table from '@/components/Dashboard/Table.vue';
 import AuthLayout from '../AuthLayout.vue';
-import PrimaryBtn from '@/components/Dashboard/Buttons/PrimaryBtn.vue';
 import View from './View.vue';
 import { useToast } from 'vue-toastification';
-import { defineAsyncComponent } from 'vue';
+import axios from 'axios'
+import { onMounted, ref } from 'vue';
+import ConfirmModal from '@/components/Dashboard/ConfirmModal.vue';
+const toast = useToast();
 
-export default {
-    setup() {
-        const toast = useToast();
-        return { toast }
-    },
-    components: {
-        Table,
-        AuthLayout,
-        PrimaryBtn,
-        View,
-        ConfirmModal: defineAsyncComponent(() => import('@/components/Dashboard/ConfirmModal.vue'))
-    },
-    data() {
-        return {
-            contacts: [],
-            currentContact: {
-                name: '',
-                email: '',
-                subject: '',
-                message: '',
-                date: ''
-            },
-            viewingContact: null,
-            showConfirmModal: false,
-            confirmModalConfig: {
-                title: '',
-                message: '',
-                confirmText: 'Confirm',
-                cancelText: 'Cancel'
-            },
-            contactToDelete: null
-        }
-    },
-    created() {
-        this.loadContacts();
-    },
-    methods: {
-        generateId() {
-            return Date.now().toString(36) + Math.random().toString(36).substr(2);
-        },
-        loadContacts() {
-            const savedContacts = localStorage.getItem('contactFormSubmissions');
-            if (savedContacts) {
-                this.contacts = JSON.parse(savedContacts);
-                this.contacts.forEach(contact => {
-                    if (!contact.id) {
-                        contact.id = this.generateId()
-                    }
-                })
-                this.saveContacts();
-            }
-        },
-        saveContacts() {
-            localStorage.setItem('contactFormSubmissions', JSON.stringify(this.contacts));
-        },
-        handleDelete(contact) {
-            this.contactToDelete = contact;
-            this.showConfirmModal = true;
-            this.confirmModalConfig = {
-                title: 'Delete contact',
-                message: 'Are you sure you want to delete this contact?',
-                confirmText: 'Delete',
-                cancelText: 'Cancel'
-            };
-        },
-        handleConfirm() {
-            try {
-                this.contacts = this.contacts.filter(c => c.id !== this.contactToDelete.id);
-                this.saveContacts();
-                this.toast.success('Contact deleted successfully');
-
-                this.showConfirmModal = false;
-                this.contactToDelete = null;
-            } catch (error) {
-                this.toast.error('Failed to delete contact');
-            }
-        },
-
-        handleCancel() {
-            this.showConfirmModal = false;
-            this.contactToDelete = null;
-        },
-        viewDetails(contact) {
-            this.viewingContact = { ...contact };
-        },
-        closeView() {
-            this.viewingContact = null;
-        }
+const currentContact = ref(
+    {
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+        date: ''
+    }
+);
+const viewingContact = ref(null);
+const showConfirmModal = ref(false);
+const confirmModalConfig = ref({
+    title: '',
+    message: '',
+    confirmText: 'Confirm',
+    cancelText: 'Cancel'
+});
+const contactToDelete = ref(null)
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const contacts = ref([])
+async function fetchContacts() {
+    try {
+        const res = await axios.get(`${apiBaseUrl}/contacts`);
+        contacts.value = res.data;
+    } catch (err) {
+        contacts.value = [];
+        toast.error('Failed to fetch contacts');
     }
 }
+
+onMounted(fetchContacts);
+
+function handleDelete(contact) {
+    contactToDelete.value = contact;
+    showConfirmModal.value = true;
+    confirmModalConfig.value = {
+        title: 'Delete user',
+        message: `Are you sure you want to delete ${contact.title}?`,
+        confirmText: 'Delete',
+        cancelText: 'Cancel'
+    };
+}
+async function handleConfirm() {
+    try {
+        const res = await axios.post(`${apiBaseUrl}/contacts/delete/${contactToDelete.value.id}`)
+        if (res.data.success) {
+            contacts.value = contacts.value.filter(i => i.id !== contactToDelete.value.id);
+            toast.success('Contact deleted successfully.');
+        } else {
+            toast.error('Error deleting contact');
+        }
+    } catch (error) {
+        toast.error('Failed to delete contact');
+    }
+    showConfirmModal.value = false;
+    contactToDelete.value = null;
+}
+function handleCancel() {
+    showConfirmModal.value = false;
+    contactToDelete.value = null;
+}
+function viewDetails(contact) {
+    viewingContact.value = { ...contact };
+}
+
+
+function closeView() {
+    viewingContact.value = null;
+}
+
 </script>
 
 <template>
@@ -104,12 +86,12 @@ export default {
             <h1 class="text-2xl font-bold mb-6">Contact Submissions</h1>
         </div>
 
-        <Table :headers="['Name', 'Email', 'Subject', 'Date']" :items="contacts" :allow-edit="false"
+        <Table :headers="['Name', 'Email', 'Subject', 'Created_At']" :items="contacts" :allow-edit="false"
             @delete="handleDelete" @view="viewDetails" :filterableColumns="[
                 { key: 'name', label: 'Name' },
                 { key: 'email', label: 'Email' },
                 { key: 'subject', label: 'Subject' },
-                { key: 'date', label: 'Date', type: 'date' },
+                { key: 'created_at', label: 'Created_At', type: 'date' },
 
             ]" />
 

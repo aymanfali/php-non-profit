@@ -1,6 +1,8 @@
 <?php
 
 use App\Controllers\AuthController;
+use App\Controllers\ContactController;
+use App\Controllers\Dashboard\DashboardContactsController;
 use App\Controllers\Dashboard\DashboardHomeController;
 use App\Controllers\Dashboard\DashboardImpactController;
 use App\Controllers\Dashboard\DashboardNewsController;
@@ -36,4 +38,9 @@ Router::get(DotEnv::env('APP_URL') . '/news/{id}', [DashboardNewsController::cla
 Router::post(DotEnv::env('APP_URL') . '/news', [DashboardNewsController::class, 'store']); 
 Router::post(DotEnv::env('APP_URL') . '/news/update/{id}', [DashboardNewsController::class, 'update']); 
 Router::post(DotEnv::env('APP_URL') . '/news/delete/{id}', [DashboardNewsController::class, 'delete']);
+
+Router::get(DotEnv::env('APP_URL') . '/contacts', [DashboardContactsController::class, 'index']); 
+Router::post(DotEnv::env('APP_URL') . '/contacts', [ContactController::class, 'store']); 
+Router::get(DotEnv::env('APP_URL') . '/contacts/{id}', [DashboardContactsController::class, 'index']);
+Router::post(DotEnv::env('APP_URL') . '/contacts/delete/{id}', [DashboardContactsController::class, 'delete']);
 

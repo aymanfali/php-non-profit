@@ -1,126 +1,105 @@
-<script>
-import { useToast } from "vue-toastification";
+<script setup>
+import axios from 'axios';
+import { computed, ref } from 'vue';
+import { useToast } from 'vue-toastification';
 
-export default {
-    setup() {
-        const toast = useToast();
-        return { toast }
-    },
-    data() {
-        return {
-            formData: {
-                name: '',
-                email: '',
-                subject: '',
-                message: ''
-            },
-            errors: {
-                name: '',
-                email: '',
-                subject: '',
-                message: ''
-            },
-            allSubmissions: [] // Stores all submitted messages
-        }
-    },
-    computed: {
-        isFormValid() {
-            return Object.values(this.errors).every(error => error === '')
-        }
-    },
-    mounted() {
-        // Load previously saved submissions from localStorage
-        const savedSubmissions = localStorage.getItem('contactFormSubmissions');
-        if (savedSubmissions) {
-            this.allSubmissions = JSON.parse(savedSubmissions);
-        }
-    },
-    methods: {
-        validateName(value) {
-            if (value.length < 3) {
-                return "Your name must contain at least 3 characters";
-            }
-            if (!/^[a-zA-Z ]+$/.test(value)) {
-                return "Please enter a valid name (letters and spaces only)";
-            }
-            return "";
-        },
-        validateEmail(value) {
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                return "Please enter a valid email address";
-            }
-            return "";
-        },
-        validateField(value, fieldName) {
-            if (value === "") {
-                return `Please enter your ${fieldName}`;
-            }
-            if (value.length < 10 && fieldName !== 'name') {
-                return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at least 10 characters`;
-            }
-            return "";
-        },
-        handleInput(field) {
-            if (field === 'name') {
-                this.errors.name = this.validateName(this.formData.name);
-            } else if (field === 'email') {
-                this.errors.email = this.validateEmail(this.formData.email);
-            } else {
-                this.errors[field] = this.validateField(this.formData[field], field);
-            }
-        },
-        submitForm() {
-            // Validate all fields
-            this.errors.name = this.validateName(this.formData.name);
-            this.errors.email = this.validateEmail(this.formData.email);
-            this.errors.subject = this.validateField(this.formData.subject, 'subject');
-            this.errors.message = this.validateField(this.formData.message, 'message');
+const toast = useToast();
+const formData = ref({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+});
+const errors = ref({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+});
 
-            if (!this.isFormValid) {
-                this.toast.error("Please fix the errors in the form");
-                return;
-            }
+const isFormValid = computed(() => {
+    return Object.values(errors.value).every(error => error === '');
+});
 
-            try {
-                const submission = {
-                    ...this.formData,
-                    date: new Date().toISOString() // Add timestamp
-                };
-                this.allSubmissions.push(submission);
-
-                // Save updated submissions to localStorage
-                localStorage.setItem(
-                    'contactFormSubmissions',
-                    JSON.stringify(this.allSubmissions)
-                );
-
-                this.toast.success("Your message was sent successfully!");
-
-                // Reset form
-                this.formData = {
-                    name: '',
-                    email: '',
-                    subject: '',
-                    message: ''
-                };
-                this.errors = {
-                    name: '',
-                    email: '',
-                    subject: '',
-                    message: ''
-                };
-            } catch (error) {
-                this.toast.error("An error occurred while processing your request");
-            }
-        },
-        clearAllSubmissions() {
-            if (confirm("Are you sure you want to delete ALL saved messages?")) {
-                this.allSubmissions = [];
-                localStorage.removeItem('contactFormSubmissions');
-            }
-        }
+function validateName(value) {
+    if (value.length < 3) {
+        return "Your name must contain at least 3 characters";
+    }
+    if (!/^[a-zA-Z ]+$/.test(value)) {
+        return "Please enter a valid name (letters and spaces only)";
+    }
+    return "";
+}
+function validateEmail(value) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        return "Please enter a valid email address";
+    }
+    return "";
+}
+function validateField(value, fieldName) {
+    if (value === "") {
+        return `Please enter your ${fieldName}`;
+    }
+    if (value.length < 10 && fieldName !== 'name') {
+        return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at least 10 characters`;
+    }
+    return "";
+}
+function handleInput(field) {
+    if (field === 'name') {
+        errors.value.name = validateName(formData.value.name);
+    } else if (field === 'email') {
+        errors.value.email = validateEmail(formData.value.email);
+    } else {
+        errors.value[field] = validateField(formData.value[field], field);
     }
 }
+function submitForm() {
+    errors.value.name = validateName(formData.value.name);
+    errors.value.email = validateEmail(formData.value.email);
+    errors.value.subject = validateField(formData.value.subject, 'subject');
+    errors.value.message = validateField(formData.value.message, 'message');
+
+    if (!isFormValid.value) {
+        toast.error("Please fix the errors in the form");
+        return;
+    }
+    try {
+        const apiBase = import.meta.env.VITE_API_BASE_URL;
+        const data = {
+            name: formData.value.name,
+            email: formData.value.email,
+            subject: formData.value.subject,
+            message: formData.value.message
+        };
+        axios.post(`${apiBase}/contacts/`, data)
+            .then(res => {
+                if (res.data.success) {
+                    toast.success("Your message was sent successfully!");
+                    formData.value = {
+                        name: '',
+                        email: '',
+                        subject: '',
+                        message: ''
+                    };
+                    errors.value = {
+                        name: '',
+                        email: '',
+                        subject: '',
+                        message: ''
+                    };
+                } else {
+                    toast.error(res.data.message || "Failed to send message");
+                }
+            })
+            .catch(() => {
+                toast.error("An error occurred while processing your request");
+            });
+    } catch (error) {
+        toast.error("An error occurred while processing your request");
+    }
+}
+
 </script>
 
 <template>

@@ -73,7 +73,7 @@ export default {
             <div>
                 <h3 class="text-sm font-medium ">Received</h3>
                 <p class="mt-1 text-sm ">
-                    {{ formatDate(contact.date) }}
+                    {{ formatDate(contact.created_at) }}
                 </p>
             </div>
 
