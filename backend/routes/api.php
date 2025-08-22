@@ -2,6 +2,7 @@
 
 use App\Controllers\AuthController;
 use App\Controllers\ContactController;
+use App\Controllers\Dashboard\DashboardAboutController;
 use App\Controllers\Dashboard\DashboardContactsController;
 use App\Controllers\Dashboard\DashboardHomeController;
 use App\Controllers\Dashboard\DashboardImpactController;
@@ -44,3 +45,6 @@ Router::post(DotEnv::env('APP_URL') . '/contacts', [ContactController::class, 's
 Router::get(DotEnv::env('APP_URL') . '/contacts/{id}', [DashboardContactsController::class, 'index']);
 Router::post(DotEnv::env('APP_URL') . '/contacts/delete/{id}', [DashboardContactsController::class, 'delete']);
 
+
+Router::get(DotEnv::env('APP_URL') . '/about_us/{id}', [DashboardAboutController::class, 'index']); 
+Router::post(DotEnv::env('APP_URL') . '/about_us/update/{id}', [DashboardAboutController::class, 'update']); 
