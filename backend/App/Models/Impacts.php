@@ -13,6 +13,13 @@ class Impacts
         return $stm->fetchAll();
     }
 
+    function countImpacts()
+    {
+        $stm = App::db()->prepare("SELECT COUNT(*) FROM impacts");
+        $stm->execute();
+        return $stm->fetchColumn();
+    }
+
     function all()
     {
         $stm = App::db()->prepare("SELECT * FROM impacts");

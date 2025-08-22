@@ -13,6 +13,13 @@ class News
         return $stm->fetchAll();
     }
 
+    function countNews()
+    {
+        $stm = App::db()->prepare("SELECT COUNT(*) FROM news");
+        $stm->execute();
+        return $stm->fetchColumn();
+    }
+
     function all()
     {
         $stm = App::db()->prepare("SELECT * FROM news");
