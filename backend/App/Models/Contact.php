@@ -13,6 +13,13 @@ class Contact
         return $stm->fetchAll();
     }
 
+    function countMessages()
+    {
+        $stm = App::db()->prepare("SELECT COUNT(*) FROM contacts");
+        $stm->execute();
+        return $stm->fetchColumn();
+    }
+
     function all()
     {
         $stm = App::db()->prepare("SELECT * FROM contacts");

@@ -22,6 +22,13 @@ class User
         return $stm->fetchAll();
     }
 
+    function countUsers()
+    {
+        $stm = App::db()->prepare("SELECT COUNT(*) FROM users");
+        $stm->execute();
+        return $stm->fetchColumn();
+    }
+
     function find($id)
     {
         $stm = App::db()->prepare("SELECT * FROM users WHERE id=:id");

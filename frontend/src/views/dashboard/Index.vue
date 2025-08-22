@@ -1,27 +1,42 @@
 <script setup>
-import AuthLayout from './AuthLayout.vue';
 
+import { useToast } from 'vue-toastification';
+import AuthLayout from './AuthLayout.vue';
 import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
 const usersCount = ref(0);
 const newsCount = ref(0);
 const impactsCount = ref(0);
 const messagesCount = ref(0);
+const data = ref(null);
 
-onMounted(() => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    usersCount.value = users.length;
+const toast = useToast();
 
-    const news = JSON.parse(localStorage.getItem('news') || '[]');
-    newsCount.value = news.length;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-    const impacts = JSON.parse(localStorage.getItem('impacts') || '[]');
-    impactsCount.value = impacts.length;
+async function fetchData() {
+    try {
+        const res = await axios.get(`${apiBaseUrl}/dashboard`);
 
-    const messages = JSON.parse(localStorage.getItem('contactFormSubmissions') || '[]');
-    messagesCount.value = messages.length;
-});
+        if (res.data) {
+            usersCount.value = res.data.users || 0;
+            newsCount.value = res.data.news || 0;
+            impactsCount.value = res.data.impacts || 0;
+            messagesCount.value = res.data.messages || 0;
+            data.value = res.data;
+        }        
+
+    } catch (err) {
+        data.value = null; // Clear any old data
+        toast.error('Failed to fetch dashboard data. Please try again.');
+    }
+}
+
+onMounted(fetchData);
+
 </script>
+
 
 <template>
     <AuthLayout>
