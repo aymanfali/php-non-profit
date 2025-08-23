@@ -1,62 +1,102 @@
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import Pagination from './Pagination.vue';
+import axios from 'axios';
 
-export default {
-    components: {
-        Pagination
+const props = defineProps({
+    showLatestOnly: {
+        type: Boolean,
+        default: false
     },
-    data() {
-        return {
-            news: [],
-            currentPage: 1,
-            itemsPerPage: 6
+    maxLatestItems: {
+        type: Number,
+        default: 3
+    }
+});
+
+const router = useRouter();
+
+const items = ref([]);
+const currentPage = ref(1);
+const itemsPerPage = 6;
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+async function fetchData() {
+    try {
+        const res = await axios.get(`${apiBaseUrl}/news`);
+
+        if (res.data) {
+            items.value = res.data || 0;
         }
-    },
-    created() {
-        this.loadNews();
-    },
-    computed: {
-        totalPages() {
-            return Math.ceil(this.news.length / this.itemsPerPage);
-        },
-        paginatedItems() {
-            const start = (this.currentPage - 1) * this.itemsPerPage;
-            const end = start + this.itemsPerPage;
-            return this.news.slice(start, end);
-        }
-    },
-    methods: {
-        loadNews() {
-            const savedNews = localStorage.getItem('news');
-            if (savedNews) {
-                this.news = JSON.parse(savedNews);
-            }
-        },
-        goToNewsDetail(newsId) {
-            this.$router.push({ name: 'NewsDetails', params: { id: newsId } });
-        },
-        handlePageChange(page) {
-            this.currentPage = page;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+
+    } catch (err) {
+        items.value = null; // Clear any old data
+        toast.error('Failed to fetch news data. Please try again.');
     }
 }
+onMounted(fetchData);
+
+
+
+// Computed properties
+const totalPages = computed(() => {
+    return Math.ceil(items.value.length / itemsPerPage);
+});
+
+const paginatedItems = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return items.value.slice(start, end);
+});
+
+const latestItems = computed(() => {
+    return [...items.value].reverse().slice(0, props.maxLatestItems);
+});
+
+const displayedItems = computed(() => {
+    return props.showLatestOnly ? latestItems.value : paginatedItems.value;
+});
+
+const gridColumnsClass = computed(() => {
+    return props.showLatestOnly
+        ? 'grid-cols-1 md:grid-cols-3'
+        : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+});
+
+// Methods
+const goToNewsDetail = (newsId) => {
+    router.push({ name: 'NewsDetails', params: { id: newsId } });
+};
+
+const handlePageChange = (page) => {
+    currentPage.value = page;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+
 </script>
 
 <template>
-    <div class="news m-5 md:mx-28 text-text-main">
-        <div v-for="(item, index) in paginatedItems" :key="item.id" @click="goToNewsDetail(item.id)"
-            class="m-[20px_10px] p-[10px] rounded-[15px] flex flex-col md:flex-row-reverse justify-between items-center shadow-md hover:text-horizontal-line cursor-pointer">
-            <img class="rounded-lg h-52 w-full md:w-80 object-cover" :src="item.image" :alt="item.title" />
-            <div class="p-[10px] flex flex-col w-full">
-                <p>{{ item.title }}</p>
-                <span class="p-[10px] text-sm text-color-gray">{{ item.date }}</span>
-                <a class="text-end text-md">Read more ...</a>
+    <div class="news-container">
+        <div class="grid gap-5 m-5" :class="gridColumnsClass">
+            <div v-for="item in displayedItems" :key="item.id" @click="goToNewsDetail(item.id)"
+                class="rounded-2xl shadow-md hover:cursor-pointer transition-transform duration-300 hover:scale-105">
+                <img :src="item.image" :alt="item.title" class="rounded-t-2xl w-full h-[300px] object-cover">
+                <div class="p-5 text-text-main">
+                    <h3 class="text-lg font-semibold mb-2">{{ item.title }}</h3>
+                    <div class="text-right text-horizontal-line hover:underline">Read more...</div>
+                </div>
             </div>
         </div>
 
-        <Pagination v-if="news.length > itemsPerPage" :current-page="currentPage" :total-pages="totalPages"
-            @page-changed="handlePageChange" />
-
+        <Pagination v-if="!props.showLatestOnly && items.length > itemsPerPage" :current-page="currentPage"
+            :total-pages="totalPages" @page-changed="handlePageChange" />
     </div>
 </template>
+
+<style scoped>
+.news-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+</style>
