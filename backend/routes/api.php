@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\AboutController;
 use App\Controllers\AuthController;
 use App\Controllers\ContactController;
 use App\Controllers\Dashboard\DashboardAboutController;
@@ -46,7 +47,6 @@ Router::post(DotEnv::env('APP_URL') . '/news/delete/{id}', [DashboardNewsControl
 
 // contacts dashboard API endpoints
 Router::get(DotEnv::env('APP_URL') . '/contacts', [DashboardContactsController::class, 'index']); 
-Router::post(DotEnv::env('APP_URL') . '/contacts', [ContactController::class, 'store']); 
 Router::get(DotEnv::env('APP_URL') . '/contacts/{id}', [DashboardContactsController::class, 'index']);
 Router::post(DotEnv::env('APP_URL') . '/contacts/delete/{id}', [DashboardContactsController::class, 'delete']);
 
@@ -62,7 +62,11 @@ Router::post(DotEnv::env('APP_URL') . '/settings/delete_contacts', [DashboardSet
 
 // website public API endpoints
 Router::get(DotEnv::env('APP_URL') . '/', [HomeController::class, 'index']);
-Router::get(DotEnv::env('APP_URL') . '/impacts/view/{id}', [HomeController::class, 'view']);
+Router::get(DotEnv::env('APP_URL') . '/impacts/{id}', [HomeController::class, 'view']);
 
 Router::get(DotEnv::env('APP_URL') . '/news', [NewsController::class, 'index']);
-Router::get(DotEnv::env('APP_URL') . '/news/view/{id}', [NewsController::class, 'view']);
+Router::get(DotEnv::env('APP_URL') . '/news/{id}', [NewsController::class, 'view']);
+
+Router::get(DotEnv::env('APP_URL') . '/about_us', [AboutController::class, 'view']);
+
+Router::post(DotEnv::env('APP_URL') . '/contacts', [ContactController::class, 'store']); 

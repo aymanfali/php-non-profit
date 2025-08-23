@@ -6,8 +6,20 @@ import { useToast } from 'vue-toastification';
 import axios from 'axios';
 
 const toast = useToast();
-const aboutUsData = ref(null);
-const originalData = ref(null);
+const aboutUsData = ref({
+    our_history: '',
+    our_values: '',
+    our_history_image: '',
+    our_values_image: '',
+});
+
+const originalData = ref({
+    our_history: '',
+    our_values: '',
+    our_history_image: '',
+    our_values_image: '',
+});
+
 const errors = ref({}); // Reactive object to store validation errors
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -17,7 +29,12 @@ async function fetchData() {
         aboutUsData.value = res.data;
         originalData.value = { ...res.data };
     } catch (err) {
-        aboutUsData.value = null;
+        aboutUsData.value = {
+            our_history: '',
+            our_values: '',
+            our_history_image: '',
+            our_values_image: '',
+        };
         toast.error('Failed to fetch data');
     }
 }
@@ -76,7 +93,7 @@ async function handleSubmit() {
     <AuthLayout>
         <div class="mx-auto p-3">
             <h1 class="text-3xl font-bold mb-8 text-center">About</h1>
-            <form @submit.prevent="handleSubmit" class="space-y-6" v-if="aboutUsData">
+            <form @submit.prevent="handleSubmit" class="space-y-6">
                 <div>
                     <label for="history" class="block font-bold mb-2">
                         History
