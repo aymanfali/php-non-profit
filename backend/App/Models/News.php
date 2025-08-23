@@ -55,4 +55,10 @@ class News
         $stm = App::db()->prepare("DELETE FROM news WHERE id=:id");
         $stm->execute(['id' => $id]);
     }
+
+    function truncate()
+    {
+        $stm = App::db()->prepare("TRUNCATE TABLE news");
+        $stm->execute();
+    }
 }

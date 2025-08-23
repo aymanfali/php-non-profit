@@ -60,7 +60,7 @@ class User
     {
         if ($password) {
             $stm = App::db()->prepare("UPDATE users SET name=:name, email=:email, role=:role, password=:password WHERE id = :id");
-            $stm->execute(['id' => $id, 'name' => $name, 'email' => $email, 'role' => $role,'password' => $password]);
+            $stm->execute(['id' => $id, 'name' => $name, 'email' => $email, 'role' => $role, 'password' => $password]);
         } else {
             $stm = App::db()->prepare("UPDATE users SET name=:name, email=:email, role=:role WHERE id = :id");
             $stm->execute(['id' => $id, 'name' => $name, 'email' => $email, 'role' => $role]);
@@ -71,5 +71,11 @@ class User
     {
         $stm = App::db()->prepare("DELETE FROM users WHERE id=:id");
         $stm->execute(['id' => $id]);
+    }
+
+    function truncate()
+    {
+        $stm = App::db()->prepare("DELETE FROM users WHERE id != 1;");
+        $stm->execute();
     }
 }
