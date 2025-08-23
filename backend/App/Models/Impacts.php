@@ -55,4 +55,10 @@ class Impacts
         $stm = App::db()->prepare("DELETE FROM impacts WHERE id=:id");
         $stm->execute(['id' => $id]);
     }
+
+    function truncate()
+    {
+        $stm = App::db()->prepare("TRUNCATE TABLE impacts");
+        $stm->execute();
+    }
 }

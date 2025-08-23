@@ -49,4 +49,10 @@ class Contact
         $stm = App::db()->prepare("DELETE FROM contacts WHERE id=:id");
         $stm->execute(['id' => $id]);
     }
+
+    function truncate()
+    {
+        $stm = App::db()->prepare("TRUNCATE TABLE contacts");
+        $stm->execute();
+    }
 }

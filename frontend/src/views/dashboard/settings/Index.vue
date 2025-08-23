@@ -4,8 +4,10 @@ import AuthLayout from '../AuthLayout.vue';
 import ConfirmModal from '@/components/Dashboard/ConfirmModal.vue';
 import { useToast } from "vue-toastification";
 import { ref } from 'vue';
+import axios from 'axios';
 
 const toast = useToast();
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 // Modal state
 const showConfirmModal = ref(false);
@@ -27,39 +29,55 @@ const resetSiteData = () => {
     }
 };
 
-const clearUsersData = () => {
+const clearUsersData = async () => {
     try {
-        localStorage.removeItem('users');
-        toast.success('Users data has been deleted successfully!');
+        const res = await axios.post(`${apiBaseUrl}/settings/delete_users`)
+        if (res.data.success) {
+            toast.success('Users data has been deleted successfully!');
+        } else {
+            toast.error('Error deleting users');
+        }
     } catch (error) {
-        toast.error('Failed deleting Users data');
+        toast.error('Failed deleting users');
     }
 };
 
-const clearNewsData = () => {
+const clearNewsData = async () => {
     try {
-        localStorage.removeItem('news');
-        toast.success('News data has been deleted successfully!');
+        const res = await axios.post(`${apiBaseUrl}/settings/delete_news`)
+        if (res.data.success) {
+            toast.success('News data has been deleted successfully!');
+        } else {
+            toast.error('Error deleting news');
+        }
     } catch (error) {
-        toast.error('Failed deleting News data');
+        toast.error('Failed deleting news');
     }
 };
 
-const clearImpactsData = () => {
+const clearImpactsData = async () => {
     try {
-        localStorage.removeItem('impacts');
-        toast.success('Impacts data has been deleted successfully!');
+        const res = await axios.post(`${apiBaseUrl}/settings/delete_impacts`)
+        if (res.data.success) {
+            toast.success('Impacts data has been deleted successfully!');
+        } else {
+            toast.error('Error deleting impacts');
+        }
     } catch (error) {
-        toast.error('Failed deleting Impacts data');
+        toast.error('Failed deleting impacts');
     }
 };
 
-const clearContactsData = () => {
+const clearContactsData = async () => {
     try {
-        localStorage.removeItem('contactFormSubmissions');
-        toast.success('Contact data has been deleted successfully!');
+        const res = await axios.post(`${apiBaseUrl}/settings/delete_contacts`)        
+        if (res.data.success) {            
+            toast.success('Contacts data has been deleted successfully!');
+        } else {
+            toast.error('Error deleting contacts');
+        }
     } catch (error) {
-        toast.error('Failed deleting Contact data');
+        toast.error('Failed deleting contacts');
     }
 };
 
@@ -89,7 +107,7 @@ const executeConfirmedAction = () => {
 
             <h2 class="text-xl font-semibold mb-4">Danger Zone</h2>
             <DangerZone title="Reset Site Data"
-                description="This will clear all locally stored website data including settings, impacts, news, and contact submissions."
+                description="This will clear all locally stored website data NOT including impacts, news, or contact submissions."
                 buttonText="Reset Data" @reset="confirmAction(
                     'Reset All Site Data?',
                     'This will permanently delete ALL locally stored data. This action cannot be undone.',
@@ -97,10 +115,10 @@ const executeConfirmedAction = () => {
                     'Reset All Data'
                 )" />
 
-            <DangerZone title="Delete Users Data" description="This will clear all locally stored Users data."
+            <DangerZone title="Delete Users Data" description="This will clear all locally stored Users data except admin."
                 buttonText="Clear Users Data" @reset="confirmAction(
                     'Delete All Users Data?',
-                    'This will permanently delete all Users data. This action cannot be undone.',
+                    'This will permanently delete all Users data except admin. This action cannot be undone.',
                     clearUsersData
                 )" />
 

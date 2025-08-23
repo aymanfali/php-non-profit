@@ -59,3 +59,10 @@
 [2025-08-21 07:01:21] User admin@test.com logged in.
 [2025-08-21 07:01:55] User admin logged out.
 [2025-08-21 07:02:07] User admin@test.com logged in.
+[2025-08-23 05:16:41] User admin logged out.
+[2025-08-23 05:17:03] New user registered: admin@test.com
+[2025-08-23 05:18:05] User admin@test.com logged in.
+[2025-08-23 05:25:02] User admin logged out.
+[2025-08-23 05:25:11] New user registered: borufugi@mailinator.com
+[2025-08-23 05:25:19] New user registered: celito@mailinator.com
+[2025-08-23 05:25:38] User admin@test.com logged in.

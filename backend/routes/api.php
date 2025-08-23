@@ -7,6 +7,7 @@ use App\Controllers\Dashboard\DashboardContactsController;
 use App\Controllers\Dashboard\DashboardHomeController;
 use App\Controllers\Dashboard\DashboardImpactController;
 use App\Controllers\Dashboard\DashboardNewsController;
+use App\Controllers\Dashboard\DashboardSettingsController;
 use App\Controllers\HomeController;
 use App\Controllers\UserController;
 use App\Core\DotEnv;
@@ -47,4 +48,11 @@ Router::post(DotEnv::env('APP_URL') . '/contacts/delete/{id}', [DashboardContact
 
 
 Router::get(DotEnv::env('APP_URL') . '/about_us/{id}', [DashboardAboutController::class, 'index']); 
-Router::post(DotEnv::env('APP_URL') . '/about_us/update/{id}', [DashboardAboutController::class, 'update']); 
+Router::post(DotEnv::env('APP_URL') . '/about_us/update/{id}', [DashboardAboutController::class, 'update']);
+
+// settings actions to delete data
+Router::post(DotEnv::env('APP_URL') . '/settings/delete_users', [DashboardSettingsController::class, 'destroyUsers']);
+Router::post(DotEnv::env('APP_URL') . '/settings/delete_news', [DashboardSettingsController::class, 'destroyNews']);
+Router::post(DotEnv::env('APP_URL') . '/settings/delete_impacts', [DashboardSettingsController::class, 'destroyImpacts']);
+Router::post(DotEnv::env('APP_URL') . '/settings/delete_contacts', [DashboardSettingsController::class, 'destroyContacts']);
+
