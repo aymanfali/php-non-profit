@@ -9,6 +9,7 @@ use App\Controllers\Dashboard\DashboardImpactController;
 use App\Controllers\Dashboard\DashboardNewsController;
 use App\Controllers\Dashboard\DashboardSettingsController;
 use App\Controllers\HomeController;
+use App\Controllers\NewsController;
 use App\Controllers\UserController;
 use App\Core\DotEnv;
 use App\Core\Router;
@@ -62,3 +63,6 @@ Router::post(DotEnv::env('APP_URL') . '/settings/delete_contacts', [DashboardSet
 // website public API endpoints
 Router::get(DotEnv::env('APP_URL') . '/', [HomeController::class, 'index']);
 Router::get(DotEnv::env('APP_URL') . '/impacts/view/{id}', [HomeController::class, 'view']);
+
+Router::get(DotEnv::env('APP_URL') . '/news', [NewsController::class, 'index']);
+Router::get(DotEnv::env('APP_URL') . '/news/view/{id}', [NewsController::class, 'view']);
