@@ -22,8 +22,6 @@ async function fetchData() {
 
         if (res.data) {
             about.value = res.data || 0;
-            console.log(about.value);
-
         }
 
     } catch (err) {
