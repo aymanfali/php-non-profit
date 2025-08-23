@@ -1,42 +1,37 @@
-<script>
+<script setup>
+import { ref, onMounted, watch } from 'vue';
 import GuestLayout from './GuestLayout.vue';
+import axios from 'axios';
 
-export default {
-    components: {
-        GuestLayout
-    },
-    data() {
-        return {
-            about: {
-                history: '',
-                values: '',
-            },
-            defaultContent: {
-                history: 'UNESCO was created to decide what kind of society we wanted to build together after the destruction of two World Wars. As early as 1942, global leaders began imagining an organization that would use education, culture, science and information to build lasting peace. Over the years, UNESCO has implemented initiatives that have radically improved lives around the world, and shaped global action in its field of competence.',
-                values: 'Our #SharingHumanity campaign reminds us of our global values, culture, and knowledge. By strengthening these ties, we build the foundations of peace between people and nations.'
-            }
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const about = ref(null);
+
+const props = defineProps({
+    id: {
+        type: String,
+        required: true
+    }
+});
+
+watch(() => props.id, fetchData);
+
+async function fetchData() {
+    try {
+        const res = await axios.get(`${apiBaseUrl}/about_us`);
+
+        if (res.data) {
+            about.value = res.data || 0;
+            console.log(about.value);
+
         }
-    },
-    created() {
-        this.loadAbout();
-    },
-    methods: {
-        loadAbout() {
-            const savedAbout = localStorage.getItem('aboutFormData');
-            if (savedAbout) {
-                try {
-                    const parsed = JSON.parse(savedAbout);
-                    // Only use saved data if fields aren't empty strings
-                    if (parsed.history?.trim() || parsed.values?.trim()) {
-                        this.about = parsed;
-                    }
-                } catch (e) {
-                    console.error('Failed to parse about data', e);
-                }
-            }
-        },
-    },
+
+    } catch (err) {
+        about.value = null; // Clear any old data
+    }
 }
+onMounted(fetchData);
+
 </script>
 
 <template>
@@ -45,15 +40,14 @@ export default {
             <h1 class="title font-bold mb-5 text-text-sec z-10">About Us</h1>
         </Hero>
 
-        <section class="about-us p-5 text-text-main">
+        <section v-if="about" class="about-us p-5 text-text-main">
             <div class="our-history">
                 <h2 class="title text-center m-8 font-bold text-3xl">Our history</h2>
                 <div class="history flex flex-col justify-center items-center my-8 md:flex-row">
-                    <img loading="lazy" src="/public/images/history.webp" alt="history"
+                    <img loading="lazy" :src="about.our_history_image" alt="history"
                         class="max-w-[350px] h-auto mx-auto rounded-[15px]">
                     <div class="description m-8 leading-relaxed">
-                        <p v-if="about.history">{{ about.history }}</p>
-                        <p v-else>{{ defaultContent.history }}</p>
+                        <p>{{ about.our_history }}</p>
                     </div>
                 </div>
             </div>
@@ -63,16 +57,18 @@ export default {
             <div class="our-values">
                 <h2 class="title text-center m-8 font-bold text-3xl">Our Values</h2>
                 <div class="values flex flex-col justify-center items-center my-8 md:flex-row-reverse">
-                    <img loading="lazy" src="/public/images/values.webp" alt="values"
+                    <img loading="lazy" :src="about.our_values_image" alt="values"
                         class="max-w-[350px] h-auto mx-auto rounded-[15px]">
                     <div class="description m-8 leading-relaxed">
-                        <p v-if="about.values">{{ about.values }}</p>
-                        <p v-else>{{ defaultContent.values }}</p>
+                        <p>{{ about.our_values }}</p>
                     </div>
                 </div>
             </div>
 
             <hr class="my-8">
+        </section>
+        <section v-else>
+            <p>Loading...</p>
         </section>
     </GuestLayout>
 </template>
