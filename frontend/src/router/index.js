@@ -15,8 +15,8 @@ import AdminAbout from "@/views/dashboard/about/Index.vue";
 import AdminContacts from "@/views/dashboard/contacts/Index.vue";
 import AdminSettings from "@/views/dashboard/settings/Index.vue";
 
-import AuthLogin from "@/views/login/Index.vue";
-import AuthSignUp from "@/views/registration/Index.vue";
+import AuthLogin from "@/views/auth/login/Index.vue";
+import AuthSignUp from "@/views/auth/registration/Index.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
