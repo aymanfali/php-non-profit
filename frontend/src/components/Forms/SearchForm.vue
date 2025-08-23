@@ -1,89 +1,101 @@
-<script>
-export default {
-    data() {
-        return {
-            isSearchFormOpen: false,
-            isResultListOpen: false,
-            searchQuery: '',
-            searchResults: [],
-            impactsData: [],
-            newsData: [],
-            isLoading: false
-        }
-    },
-    mounted() {
-        this.loadLocalData();
-        document.addEventListener('click', this.handleClickOutside);
-    },
-    beforeDestroy() {
-        document.removeEventListener('click', this.handleClickOutside);
-    },
-    methods: {
-        showSearchForm() {
-            this.isSearchFormOpen = !this.isSearchFormOpen;
-            if (this.isSearchFormOpen) {
-                this.$nextTick(() => {
-                    this.$refs.searchInput.focus();
-                });
-            } else {
-                this.closeSearch();
-            }
-        },
-        loadLocalData() {
-            // Load impacts data
-            const impactsStored = localStorage.getItem('impacts');
-            this.impactsData = impactsStored ? JSON.parse(impactsStored) : [];
+<script setup>
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import axios from 'axios';
 
-            // Load news data
-            const newsStored = localStorage.getItem('news');
-            this.newsData = newsStored ? JSON.parse(newsStored) : [];
-        },
-        handleSearch() {
-            if (this.searchQuery.trim() === '') {
-                this.searchResults = [];
-                this.isResultListOpen = false;
-                return;
-            }
+const isSearchFormOpen = ref(false);
+const isResultListOpen = ref(false);
+const searchQuery = ref('');
+const searchResults = ref([]);
+const isLoading = ref(false);
+const searchInput = ref(null);
+let searchTimer = null;
 
-            if (this.searchTimer) {
-                clearTimeout(this.searchTimer);
-            }
+const router = useRouter();
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-            this.isLoading = true;
-            this.searchTimer = setTimeout(() => {
-                // Search in impacts data
-                const impactsResults = this.impactsData.filter(item =>
-                    JSON.stringify(item).toLowerCase().includes(this.searchQuery.toLowerCase())
-                ).map(item => ({ ...item, type: 'impacts' }));
+const API_ENDPOINTS = {
+    impacts: `${apiBaseUrl}/impacts`,
+    news: `${apiBaseUrl}/news`
+};
 
-                // Search in news data
-                const newsResults = this.newsData.filter(item =>
-                    JSON.stringify(item).toLowerCase().includes(this.searchQuery.toLowerCase())
-                ).map(item => ({ ...item, type: 'news' }));
-
-                // Combine results
-                this.searchResults = [...impactsResults, ...newsResults];
-                this.isResultListOpen = true;
-                this.isLoading = false;
-            }, 300);
-        },
-        closeSearch() {
-            this.isSearchFormOpen = false;
-            this.isResultListOpen = false;
-            this.searchQuery = '';
-            this.searchResults = [];
-        },
-        handleClickOutside(event) {
-            if (!this.$el.contains(event.target)) {
-                this.closeSearch();
-            }
-        },
-        navigateToResult(result) {
-            this.closeSearch();
-            this.$router.push(`/${result.type}/${result.id}`);
-        }
+const showSearchForm = () => {
+    isSearchFormOpen.value = !isSearchFormOpen.value;
+    if (isSearchFormOpen.value) {
+        nextTick(() => {
+            searchInput.value.focus();
+        });
+    } else {
+        closeSearch();
     }
-}
+};
+
+const handleSearch = () => {
+    if (searchQuery.value.trim() === '') {
+        searchResults.value = [];
+        isResultListOpen.value = false;
+        return;
+    }
+
+    if (searchTimer) {
+        clearTimeout(searchTimer);
+    }
+
+    isLoading.value = true;
+    searchTimer = setTimeout(async () => {
+        try {
+            const [impactsResponse, newsResponse] = await Promise.all([
+                axios.get(API_ENDPOINTS.impacts, { params: { q: searchQuery.value } }),
+                axios.get(API_ENDPOINTS.news, { params: { q: searchQuery.value } })
+            ]);
+
+            const impactsResults = impactsResponse.data.filter(item =>
+                JSON.stringify(item).toLowerCase().includes(searchQuery.value.toLowerCase())
+            ).map(item => ({ ...item, type: 'impacts' }));
+            const newsResults = newsResponse.data.filter(item =>
+                JSON.stringify(item).toLowerCase().includes(searchQuery.value.toLowerCase())
+            ).map(item => ({ ...item, type: 'news' }));
+
+            searchResults.value = [...impactsResults, ...newsResults];
+            isResultListOpen.value = true;
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+            searchResults.value = [];
+            isResultListOpen.value = false;
+        } finally {
+            isLoading.value = false;
+        }
+    }, 300);
+};
+
+const closeSearch = () => {
+    isSearchFormOpen.value = false;
+    isResultListOpen.value = false;
+    searchQuery.value = '';
+    searchResults.value = [];
+};
+
+const handleClickOutside = (event) => {
+    const componentRoot = document.querySelector('.your-component-root');
+    if (componentRoot && !componentRoot.contains(event.target)) {
+        closeSearch();
+    }
+};
+
+const navigateToResult = (result) => {
+    closeSearch();
+    router.push(`/${result.type}/${result.id}`);
+};
+
+onMounted(() => {
+    // The initial data fetch is no longer needed here since
+    // the search is now handled directly by the API.
+    document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
@@ -108,7 +120,8 @@ export default {
             <div v-else-if="searchResults.length > 0" class="search-results">
                 <div v-for="(result, index) in searchResults" :key="index"
                     class="result-item p-3 border-b border-gray/30 hover:bg-gray/10" @click="navigateToResult(result)">
-                    <div class="result-type text-xs font-semibold mb-1 bg-primary/20 border border-horizontal-line/30 text-horizontal-line p-1 rounded-lg w-fit">
+                    <div
+                        class="result-type text-xs font-semibold mb-1 bg-primary/20 border border-horizontal-line/30 text-horizontal-line p-1 rounded-lg w-fit">
                         {{ result.type.toUpperCase() }}
                     </div>
                     <div class="result-content">
@@ -116,7 +129,7 @@ export default {
                     </div>
                     <div class="result-content">
                         {{ result.content ? result.content.substring(0, 10) + (result.content.length > 10 ? '...' : '')
-                        : 'No content' }}
+                            : 'No content' }}
                     </div>
                 </div>
             </div>
@@ -131,5 +144,4 @@ export default {
 .result-item {
     transition: background-color 0.2s;
 }
-
 </style>
