@@ -10,12 +10,15 @@ php-non-profit/
 │
 ├── backend/         # PHP MVC backend (API & web)
 │   ├── App/         # Application core, controllers, models
-│   │   ├── Controllers/   # Auth, Home, User controllers
-│   │   ├── Core/          # App bootstrap, Router, DotEnv, Session, etc.
-│   │   └── Models/        # Eloquent-style models (User, News, Impacts, etc.)
+│   │   ├── Controllers/   # Defining Dashboard and Guest Controllers
+│   │   ├── Core/          # App , Router, DotEnv, Session, etc.
+│   │   └── Models/        # models (User, News, Impacts, etc.)
 │   ├── config/      # Configuration files (uses .env)
-│   ├── public/      # Public entry point (.htaccess, index.php)
+│   ├── public/      # Public entry point (index.php)
 │   ├── routes/      # Route definitions (web.php, api.php)
+|	|__ .gitignore   # Files and Directories ignored on Git
+|	|__ .env         # Environment variables (frontend)
+|	|__ .htaccess    # Configuration file used on Apache web servers
 │   ├── schema.sql   # Database schema (MySQL)
 │   ├── storage/     # Logs, uploads
 │   ├── vendor/      # Composer dependencies
@@ -28,30 +31,32 @@ php-non-profit/
 │   │   ├── components/  # Reusable Vue components (Dashboard, Forms, etc.)
 │   │   ├── views/       # Page views (About, Contact, Dashboard, etc.)
 │   │   ├── router/      # Vue Router setup
-│   │   ├── stores/      # Pinia/Vuex stores
-│   │   └── App.vue      # Main app component
-│   ├── index.html   # Main HTML file
-│   ├── package.json # NPM dependencies
+│   │   ├── stores/      # Pinia stores
+│   │   |── App.vue      # Main app component
+|	|__ .gitignore   	# Files and Directories ignored on Git
+|	|__ .env        	# Environment variables (backend)
+│   ├── index.html   	# Main HTML file
+│   ├── package.json 	# NPM dependencies
 │   ├── vite.config.js   # Vite configuration
-│   └── README.md    # Frontend-specific documentation
+│   └── README.md    	# Frontend-specific documentation
 │
 ├── README.md        # This file (project overview)
-└── .env             # Environment variables (backend)
+└── 
 ```
 
 ## How It Works
 
 - **Backend (PHP MVC):**
-  - Handles authentication, user management, impacts, news, and contact APIs.
+  - Handles authentication, user management, users, impacts, news, and contact APIs.
   - Uses a custom router for dynamic web and API routes.
   - Connects to MySQL using PDO, with environment config via `.env`.
-  - Entry point: `backend/public/index.php` (all requests routed through here).
+  - Entry point: `backend/api/public/index.php` (all requests routed through here).
 
 - **Frontend (Vue.js):**
   - Modern SPA built with Vue 3 and Vite.
   - Communicates with backend API via Axios.
   - Features: Dashboard, user CRUD, impacts/news display, authentication, and more.
-  - Entry point: `frontend/index.html`.
+  - Entry point: `frontend/api/index.html`.
 
 ## Setup & Usage
 
@@ -97,7 +102,4 @@ php-non-profit/
 1. Fork the repo and create a feature branch.
 2. Make your changes and submit a pull request.
 
-## License
-
-MIT
 
