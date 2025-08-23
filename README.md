@@ -1,7 +1,7 @@
 
-# PHP Non-Profit Organization Platform
+# Non-Profit Organization Platform
 
-A full-stack web application for non-profit organizations, built with a PHP MVC backend and a Vue.js frontend.
+A full-stack web application for non-profit organizations, built with a PHP MVC backend and a Vue.js frontend applying API routings.
 
 ## Project Structure
 
