@@ -15,7 +15,7 @@ php-non-profit/
 │   │   └── Models/        # models (User, News, Impacts, etc.)
 │   ├── config/      # Configuration files (uses .env)
 │   ├── public/      # Public entry point (index.php)
-│   ├── routes/      # Route definitions (web.php, api.php)
+│   ├── routes/      # Route definitions (api.php)
 |	|__ .gitignore   # Files and Directories ignored on Git
 |	|__ .env         # Environment variables (frontend)
 |	|__ .htaccess    # Configuration file used on Apache web servers
