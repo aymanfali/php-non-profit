@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Models\Impacts;
 
-class HomeController
+class ImpactsController
 {
     function index()
     {

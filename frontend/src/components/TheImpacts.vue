@@ -24,7 +24,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 async function fetchData() {
     try {
-        const res = await axios.get(`${apiBaseUrl}/`);
+        const res = await axios.get(`${apiBaseUrl}/impacts`);
         
         if (res.data) {
             items.value = res.data || 0;

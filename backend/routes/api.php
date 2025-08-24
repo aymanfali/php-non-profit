@@ -10,6 +10,7 @@ use App\Controllers\Dashboard\DashboardImpactController;
 use App\Controllers\Dashboard\DashboardNewsController;
 use App\Controllers\Dashboard\DashboardSettingsController;
 use App\Controllers\HomeController;
+use App\Controllers\ImpactsController;
 use App\Controllers\NewsController;
 use App\Controllers\UserController;
 use App\Core\DotEnv;
@@ -61,8 +62,8 @@ Router::post(DotEnv::env('APP_URL') . '/settings/delete_impacts', [DashboardSett
 Router::post(DotEnv::env('APP_URL') . '/settings/delete_contacts', [DashboardSettingsController::class, 'destroyContacts']);
 
 // website public API endpoints
-Router::get(DotEnv::env('APP_URL') . '/', [HomeController::class, 'index']);
-Router::get(DotEnv::env('APP_URL') . '/impacts/{id}', [HomeController::class, 'view']);
+Router::get(DotEnv::env('APP_URL') . '/impacts', [ImpactsController::class, 'index']);
+Router::get(DotEnv::env('APP_URL') . '/impacts/{id}', [ImpactsController::class, 'view']);
 
 Router::get(DotEnv::env('APP_URL') . '/news', [NewsController::class, 'index']);
 Router::get(DotEnv::env('APP_URL') . '/news/{id}', [NewsController::class, 'view']);
