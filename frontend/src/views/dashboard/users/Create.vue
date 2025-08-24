@@ -91,7 +91,7 @@ export default {
                         role: this.user.role,
                         password: this.user.password
                     };
-                    const res = await axios.post(`${apiBase}/users`, payload);
+                    const res = await axios.post(`${apiBase}/dashboard/users`, payload);
                     if (res.data.success) {
                         this.toast.success('User added successfully');
                         this.$emit('save', res.data.user || { ...this.user });

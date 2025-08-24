@@ -15,58 +15,100 @@ use App\Controllers\NewsController;
 use App\Core\DotEnv;
 use App\Core\Router;
 
-// Auth API endpoints
-Router::post(DotEnv::env('APP_URL') . '/auth/login', [AuthController::class, 'login']);
-Router::post(DotEnv::env('APP_URL') . '/auth/register', [AuthController::class, 'register']);
-Router::get(DotEnv::env('APP_URL') . '/auth/check', [AuthController::class, 'checkSession']);
-Router::get(DotEnv::env('APP_URL') . '/auth/logout', [AuthController::class, 'logout']);
+$base = DotEnv::env('APP_URL');
 
-// main dashboard API endpoint
-Router::get(DotEnv::env('APP_URL') . '/dashboard', [DashboardHomeController::class, 'index']);
+// grouping helper function
+function group(string $prefix, $callback)
+{
+    $callback($prefix);
+}
 
-// users dashboard API endpoint
-Router::get(DotEnv::env('APP_URL') . '/users', [UserController::class, 'index']); 
-Router::get(DotEnv::env('APP_URL') . '/users/{id}', [UserController::class, 'index']);
-Router::post(DotEnv::env('APP_URL') . '/users', [UserController::class, 'store']); 
-Router::post(DotEnv::env('APP_URL') . '/users/update/{id}', [UserController::class, 'update']); 
-Router::post(DotEnv::env('APP_URL') . '/users/delete/{id}', [UserController::class, 'delete']);
+/**
+ * ==============
+ * AUTH ROUTES
+ * ==============
+ */
+group($base . '/auth', function ($prefix) {
+    Router::post("$prefix/login", [AuthController::class, 'login']);
+    Router::post("$prefix/register", [AuthController::class, 'register']);
+    Router::get("$prefix/check", [AuthController::class, 'checkSession']);
+    Router::get("$prefix/logout", [AuthController::class, 'logout']);
+});
 
-// impacts dashboard API endpoints
-Router::get(DotEnv::env('APP_URL') . '/impacts', [DashboardImpactController::class, 'index']); 
-Router::get(DotEnv::env('APP_URL') . '/impacts/{id}', [DashboardImpactController::class, 'index']);
-Router::post(DotEnv::env('APP_URL') . '/impacts', [DashboardImpactController::class, 'store']); 
-Router::post(DotEnv::env('APP_URL') . '/impacts/update/{id}', [DashboardImpactController::class, 'update']); 
-Router::post(DotEnv::env('APP_URL') . '/impacts/delete/{id}', [DashboardImpactController::class, 'delete']);
+/**
+ * ==============
+ * DASHBOARD ROUTES
+ * ==============
+ */
+group($base . '/dashboard', function ($prefix) {
+    Router::get($prefix, [DashboardHomeController::class, 'index']);
 
-// news dashboard API endpoints
-Router::get(DotEnv::env('APP_URL') . '/news', [DashboardNewsController::class, 'index']); 
-Router::get(DotEnv::env('APP_URL') . '/news/{id}', [DashboardNewsController::class, 'index']);
-Router::post(DotEnv::env('APP_URL') . '/news', [DashboardNewsController::class, 'store']); 
-Router::post(DotEnv::env('APP_URL') . '/news/update/{id}', [DashboardNewsController::class, 'update']); 
-Router::post(DotEnv::env('APP_URL') . '/news/delete/{id}', [DashboardNewsController::class, 'delete']);
+    // Users
+    group($prefix . '/users', function ($p) {
+        Router::get($p, [UserController::class, 'index']);
+        Router::get("$p/{id}", [UserController::class, 'index']);
+        Router::post($p, [UserController::class, 'store']);
+        Router::post("$p/update/{id}", [UserController::class, 'update']);
+        Router::post("$p/delete/{id}", [UserController::class, 'delete']);
+    });
 
-// contacts dashboard API endpoints
-Router::get(DotEnv::env('APP_URL') . '/contacts', [DashboardContactsController::class, 'index']); 
-Router::get(DotEnv::env('APP_URL') . '/contacts/{id}', [DashboardContactsController::class, 'index']);
-Router::post(DotEnv::env('APP_URL') . '/contacts/delete/{id}', [DashboardContactsController::class, 'delete']);
+    // Impacts
+    group($prefix . '/impacts', function ($p) {
+        Router::get($p, [DashboardImpactController::class, 'index']);
+        Router::get("$p/{id}", [DashboardImpactController::class, 'index']);
+        Router::post($p, [DashboardImpactController::class, 'store']);
+        Router::post("$p/update/{id}", [DashboardImpactController::class, 'update']);
+        Router::post("$p/delete/{id}", [DashboardImpactController::class, 'delete']);
+    });
 
-// about_us dashboard API endpoints
-Router::get(DotEnv::env('APP_URL') . '/about_us/{id}', [DashboardAboutController::class, 'index']); 
-Router::post(DotEnv::env('APP_URL') . '/about_us/update/{id}', [DashboardAboutController::class, 'update']);
+    // News
+    group($prefix . '/news', function ($p) {
+        Router::get($p, [DashboardNewsController::class, 'index']);
+        Router::get("$p/{id}", [DashboardNewsController::class, 'index']);
+        Router::post($p, [DashboardNewsController::class, 'store']);
+        Router::post("$p/update/{id}", [DashboardNewsController::class, 'update']);
+        Router::post("$p/delete/{id}", [DashboardNewsController::class, 'delete']);
+    });
 
-// settings dashboard API endpoints to delete data
-Router::post(DotEnv::env('APP_URL') . '/settings/delete_users', [DashboardSettingsController::class, 'destroyUsers']);
-Router::post(DotEnv::env('APP_URL') . '/settings/delete_news', [DashboardSettingsController::class, 'destroyNews']);
-Router::post(DotEnv::env('APP_URL') . '/settings/delete_impacts', [DashboardSettingsController::class, 'destroyImpacts']);
-Router::post(DotEnv::env('APP_URL') . '/settings/delete_contacts', [DashboardSettingsController::class, 'destroyContacts']);
+    // Contacts
+    group($prefix . '/contacts', function ($p) {
+        Router::get($p, [DashboardContactsController::class, 'index']);
+        Router::get("$p/{id}", [DashboardContactsController::class, 'index']);
+        Router::post("$p/delete/{id}", [DashboardContactsController::class, 'delete']);
+    });
 
-// website public API endpoints
-Router::get(DotEnv::env('APP_URL') . '/impacts', [ImpactsController::class, 'index']);
-Router::get(DotEnv::env('APP_URL') . '/impacts/{id}', [ImpactsController::class, 'view']);
+    // About Us
+    group($prefix . '/about_us', function ($p) {
+        Router::get("$p/{id}", [DashboardAboutController::class, 'index']);
+        Router::post("$p/update/{id}", [DashboardAboutController::class, 'update']);
+    });
 
-Router::get(DotEnv::env('APP_URL') . '/news', [NewsController::class, 'index']);
-Router::get(DotEnv::env('APP_URL') . '/news/{id}', [NewsController::class, 'view']);
+    // Settings
+    group($prefix . '/settings', function ($p) {
+        Router::post("$p/delete_users", [DashboardSettingsController::class, 'destroyUsers']);
+        Router::post("$p/delete_news", [DashboardSettingsController::class, 'destroyNews']);
+        Router::post("$p/delete_impacts", [DashboardSettingsController::class, 'destroyImpacts']);
+        Router::post("$p/delete_contacts", [DashboardSettingsController::class, 'destroyContacts']);
+    });
+});
 
-Router::get(DotEnv::env('APP_URL') . '/about_us', [AboutController::class, 'view']);
+/**
+ * ==============
+ * PUBLIC WEBSITE ROUTES
+ * ==============
+ */
+group($base, function ($prefix) {
+    // Impacts
+    Router::get("$prefix/impacts", [ImpactsController::class, 'index']);
+    Router::get("$prefix/impacts/{id}", [ImpactsController::class, 'view']);
 
-Router::post(DotEnv::env('APP_URL') . '/contacts', [ContactController::class, 'store']); 
+    // News
+    Router::get("$prefix/news", [NewsController::class, 'index']);
+    Router::get("$prefix/news/{id}", [NewsController::class, 'view']);
+
+    // About
+    Router::get("$prefix/about_us", [AboutController::class, 'view']);
+
+    // Contacts
+    Router::post("$prefix/contacts", [ContactController::class, 'store']);
+});

@@ -46,7 +46,7 @@ async function handleSubmit() {
     }
     const apiBase = import.meta.env.VITE_API_BASE_URL;
     try {
-        const res = await axios.post(`${apiBase}/news/update/${localNews.value.id}`, localNews.value);
+        const res = await axios.post(`${apiBase}/dashboard/news/update/${localNews.value.id}`, localNews.value);
         if (res.data.success) {
             emit('save', { ...localNews.value });
         } else {

@@ -68,7 +68,7 @@ export default {
                         image: this.news.image,
                         content: this.news.content,
                     };
-                    const res = await axios.post(`${apiBase}/news`, data);
+                    const res = await axios.post(`${apiBase}/dashboard/news`, data);
                     if (res.data.success) {
                         this.toast.success('News added successfully');
                         this.$emit('save', res.data.news || { ...this.news });

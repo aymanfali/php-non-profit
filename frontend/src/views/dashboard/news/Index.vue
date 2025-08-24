@@ -35,7 +35,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const news = ref([]);
 async function fetchNews() {
     try {
-        const res = await axios.get(`${apiBaseUrl}/news`);
+        const res = await axios.get(`${apiBaseUrl}/dashboard/news`);
         news.value = res.data;
     } catch (err) {
         news.value = [];
@@ -66,7 +66,7 @@ function handleDelete(news) {
 }
 async function handleConfirm() {
     try {
-        const res = await axios.post(`${apiBaseUrl}/news/delete/${newsToDelete.value.id}`)
+        const res = await axios.post(`${apiBaseUrl}/dashboard/news/delete/${newsToDelete.value.id}`)
         if (res.data.success) {
             news.value = news.value.filter(i => i.id !== newsToDelete.value.id);
             toast.success('News deleted successfully.');
