@@ -347,26 +347,6 @@ VALUES
         'We have been awarded a significant grant to launch our new youth empowerment initiative.'
     ),
     (
-        'CEO Speaks at Global Conference',
-        'https://habitatbroward.org/wp-content/uploads/2020/01/10-Benefits-Showing-Why-Education-Is-Important-to-Our-Society.jpg',
-        'Our CEO gave a powerful speech on sustainable development at a recent conference.'
-    ),
-    (
-        'Thank You to Our Sponsors',
-        'https://www.unesco.org/sites/default/files/styles/paragraph_medium_desktop/public/2022-02/PHOTO0000003416_0001.jpg.webp?itok=FiA3AyIo',
-        'We want to express our deepest gratitude to all of our corporate sponsors.'
-    ),
-    (
-        'Success Story: Emily''s Journey',
-        'https://www.unesco.org/sites/default/files/styles/card_thumbnail/public/2021-11/pexels-min-an-1313814_1.jpg?itok=2t7D0KK_',
-        'Read about how our mentorship program transformed the life of a young woman named Emily.'
-    ),
-    (
-        'Upcoming Volunteer Orientation',
-        'https://www.unesco.org/sites/default/files/styles/banner_desktop/public/2025-02/hero-media_03.png.jpg.webp?itok=KoJj2-sM',
-        'If you are interested in volunteering, join our next orientation session.'
-    ),
-    (
         'Environmental Policy Statement',
         'https://www.unesco.org/sites/default/files/styles/paragraph_medium_desktop/public/2025-07/txt-media_navigator_01.jpg.webp?itok=sAd4oVdL',
         'We have released our new environmental policy statement, detailing our commitment to sustainability.'
@@ -395,6 +375,26 @@ VALUES
         'Looking for Board Members',
         'https://www.unesco.org/sites/default/files/styles/square_120/public/2024-02/global_observatory_610px.jpg?itok=7s2MT0P3',
         'We are seeking passionate individuals to join our board of directors.'
+    ),
+    (
+        'CEO Speaks at Global Conference',
+        'https://habitatbroward.org/wp-content/uploads/2020/01/10-Benefits-Showing-Why-Education-Is-Important-to-Our-Society.jpg',
+        'Our CEO gave a powerful speech on sustainable development at a recent conference.'
+    ),
+    (
+        'Thank You to Our Sponsors',
+        'https://www.unesco.org/sites/default/files/styles/paragraph_medium_desktop/public/2022-02/PHOTO0000003416_0001.jpg.webp?itok=FiA3AyIo',
+        'We want to express our deepest gratitude to all of our corporate sponsors.'
+    ),
+    (
+        'Success Story: Emily''s Journey',
+        'https://www.unesco.org/sites/default/files/styles/card_thumbnail/public/2021-11/pexels-min-an-1313814_1.jpg?itok=2t7D0KK_',
+        'Read about how our mentorship program transformed the life of a young woman named Emily.'
+    ),
+    (
+        'Upcoming Volunteer Orientation',
+        'https://www.unesco.org/sites/default/files/styles/banner_desktop/public/2025-02/hero-media_03.png.jpg.webp?itok=KoJj2-sM',
+        'If you are interested in volunteering, join our next orientation session.'
     );
 
 -- seeding fake contacts into 'contacts' table

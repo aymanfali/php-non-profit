@@ -1,6 +1,7 @@
 <script setup>
 import TheImpacts from '@/components/TheImpacts.vue';
 import GuestLayout from './GuestLayout.vue';
+import TheNews from '@/components/TheNews.vue';
 </script>
 
 <template>
@@ -49,6 +50,20 @@ import GuestLayout from './GuestLayout.vue';
                     Show more ...</RouterLink>
             </div>
             <TheImpacts showLatestOnly />
+        </section>
+
+        <div class="mx-auto my-5 w-52 border border-b-horizontal-line"></div>
+
+        <section class="p-3 text-center">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <h1 class="text-2xl font-bold text-center relative text-text-main">
+                    UNESCO News
+                </h1>
+                <RouterLink to="/news"
+                    class="border-0 outline-0 shadow-2xl py-3 px-4 m-9 text-center bg-primary text-text-sec z-[1] rounded-[15px] cursor-pointer hover:bg-text-sec hover:text-primary hover:outline-2">
+                    Show more ...</RouterLink>
+            </div>
+            <TheNews showLatestOnly />
         </section>
     </GuestLayout>
 </template>
