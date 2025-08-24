@@ -19,11 +19,11 @@ import TheNews from '@/components/TheNews.vue';
                 to Know us</RouterLink>
         </Hero>
 
-        <section class="intro p-3 relative">
+        <section class="intro p-3 relative max-w-7xl mx-auto">
             <h1 class="text-2xl font-bold mb-5 z-[1] text-center m-12 relative text-text-main">
                 UNESCO Introduction
             </h1>
-            <div class="description text-text-main leading-[1.5]">
+            <div class="description text-text-main leading-[1.7] text-center m-4">
                 <p>
                     UNESCO is the United Nations organization that promotes cooperation in education, science, culture
                     and communication to
@@ -40,7 +40,7 @@ import TheNews from '@/components/TheNews.vue';
 
         <div class="mx-auto my-5 w-52 border border-b-horizontal-line"></div>
 
-        <section class="impact p-3 text-center">
+        <section class="impact p-3 text-center max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <h1 class="text-2xl font-bold text-center relative text-text-main">
                     UNESCO Impacts
@@ -54,7 +54,7 @@ import TheNews from '@/components/TheNews.vue';
 
         <div class="mx-auto my-5 w-52 border border-b-horizontal-line"></div>
 
-        <section class="p-3 text-center">
+        <section class="p-3 text-center max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center">
                 <h1 class="text-2xl font-bold text-center relative text-text-main">
                     UNESCO News
