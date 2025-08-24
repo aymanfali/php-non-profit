@@ -3,16 +3,15 @@
 use App\Controllers\AboutController;
 use App\Controllers\AuthController;
 use App\Controllers\ContactController;
+use App\Controllers\Dashboard\UserController;
 use App\Controllers\Dashboard\DashboardAboutController;
 use App\Controllers\Dashboard\DashboardContactsController;
 use App\Controllers\Dashboard\DashboardHomeController;
 use App\Controllers\Dashboard\DashboardImpactController;
 use App\Controllers\Dashboard\DashboardNewsController;
 use App\Controllers\Dashboard\DashboardSettingsController;
-use App\Controllers\HomeController;
 use App\Controllers\ImpactsController;
 use App\Controllers\NewsController;
-use App\Controllers\UserController;
 use App\Core\DotEnv;
 use App\Core\Router;
 
