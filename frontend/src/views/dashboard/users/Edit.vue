@@ -41,7 +41,7 @@ async function handleSubmit() {
         userData.id = localUser.value.id;
         try {
             const apiBase = import.meta.env.VITE_API_BASE_URL;
-            const res = await axios.post(`${apiBase}/users/update/${localUser.value.id}`, userData);
+            const res = await axios.post(`${apiBase}/dashboard/users/update/${localUser.value.id}`, userData);
             if (res.data.success) {
                 toast.success('User updated successfully');
                 emit('save', userData);

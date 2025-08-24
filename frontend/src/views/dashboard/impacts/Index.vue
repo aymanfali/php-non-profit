@@ -35,7 +35,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const impacts = ref([]);
 async function fetchImpacts() {
     try {
-        const res = await axios.get(`${apiBaseUrl}/impacts`);
+        const res = await axios.get(`${apiBaseUrl}/dashboard/impacts`);
         impacts.value = res.data;
     } catch (err) {
         impacts.value = [];
@@ -66,7 +66,7 @@ function handleDelete(impact) {
 }
 async function handleConfirm() {
     try {
-        const res = await axios.post(`${apiBaseUrl}/impacts/delete/${impactToDelete.value.id}`)
+        const res = await axios.post(`${apiBaseUrl}/dashboard/impacts/delete/${impactToDelete.value.id}`)
         if (res.data.success) {
             impacts.value = impacts.value.filter(i => i.id !== impactToDelete.value.id);
             toast.success('Impact deleted successfully.');

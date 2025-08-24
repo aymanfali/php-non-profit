@@ -36,7 +36,7 @@ const toast = useToast();
 const users = ref([]);
 async function fetchUsers() {
     try {
-        const res = await axios.get(`${apiBaseUrl}/users`);
+        const res = await axios.get(`${apiBaseUrl}/dashboard/users`);
         users.value = res.data;
     } catch (err) {
         users.value = [];
@@ -68,7 +68,7 @@ function handleDelete(user) {
 async function handleConfirm() {
     if (!userToDelete.value) return;
     try {
-        const res = await axios.post(`${apiBaseUrl}/users/delete/${userToDelete.value.id}`);
+        const res = await axios.post(`${apiBaseUrl}/dashboard/users/delete/${userToDelete.value.id}`);
         if (res.data.success) {
             users.value = users.value.filter(u => u.id !== userToDelete.value.id);
             toast.success('User deleted successfully');

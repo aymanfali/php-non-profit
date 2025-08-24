@@ -67,7 +67,7 @@ export default {
                         image: this.impact.image,
                         content: this.impact.content,
                     };
-                    const res = await axios.post(`${apiBase}/impacts`, data);
+                    const res = await axios.post(`${apiBase}/dashboard/impacts`, data);
                     if (res.data.success) {
                         this.toast.success('Impact added successfully');
                         this.$emit('save', res.data.impact || { ...this.impact });

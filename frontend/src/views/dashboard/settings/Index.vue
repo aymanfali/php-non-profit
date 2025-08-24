@@ -31,7 +31,7 @@ const resetSiteData = () => {
 
 const clearUsersData = async () => {
     try {
-        const res = await axios.post(`${apiBaseUrl}/settings/delete_users`)
+        const res = await axios.post(`${apiBaseUrl}/dashboard/settings/delete_users`)
         if (res.data.success) {
             toast.success('Users data has been deleted successfully!');
         } else {
@@ -44,7 +44,7 @@ const clearUsersData = async () => {
 
 const clearNewsData = async () => {
     try {
-        const res = await axios.post(`${apiBaseUrl}/settings/delete_news`)
+        const res = await axios.post(`${apiBaseUrl}/dashboard/settings/delete_news`)
         if (res.data.success) {
             toast.success('News data has been deleted successfully!');
         } else {
@@ -57,7 +57,7 @@ const clearNewsData = async () => {
 
 const clearImpactsData = async () => {
     try {
-        const res = await axios.post(`${apiBaseUrl}/settings/delete_impacts`)
+        const res = await axios.post(`${apiBaseUrl}/dashboard/settings/delete_impacts`)
         if (res.data.success) {
             toast.success('Impacts data has been deleted successfully!');
         } else {
@@ -70,7 +70,7 @@ const clearImpactsData = async () => {
 
 const clearContactsData = async () => {
     try {
-        const res = await axios.post(`${apiBaseUrl}/settings/delete_contacts`)        
+        const res = await axios.post(`${apiBaseUrl}/dashboard/settings/delete_contacts`)        
         if (res.data.success) {            
             toast.success('Contacts data has been deleted successfully!');
         } else {

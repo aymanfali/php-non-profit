@@ -23,10 +23,11 @@ class NewsController
             $existing = $new->find($id);
             if ($existing) {
                 echo json_encode([
-                    'id' => $existing->id,
-                    'title' => $existing->title,
-                    'image' => $existing->image,
-                    'content' => $existing->content
+                    'id' => $existing['id'],
+                    'title' => $existing['title'],
+                    'image' => $existing['image'],
+                    'content' => $existing['content'],
+                    'created_at' => $existing['created_at'],
                 ]);
             } else {
                 echo json_encode([

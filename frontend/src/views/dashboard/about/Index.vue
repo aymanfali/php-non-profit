@@ -25,7 +25,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 async function fetchData() {
     try {
-        const res = await axios.get(`${apiBaseUrl}/about_us/1`);
+        const res = await axios.get(`${apiBaseUrl}/dashboard/about_us/1`);
         aboutUsData.value = res.data;
         originalData.value = { ...res.data };
     } catch (err) {
@@ -75,7 +75,7 @@ async function handleSubmit() {
     }
 
     try {
-        const res = await axios.post(`${apiBaseUrl}/about_us/update/${aboutUsData.value.id}`, aboutUsData.value);
+        const res = await axios.post(`${apiBaseUrl}/dashboard/about_us/update/${aboutUsData.value.id}`, aboutUsData.value);
 
         if (res.data.success) {
             toast.success('About Us data updated successfully!');

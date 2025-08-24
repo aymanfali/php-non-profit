@@ -30,7 +30,7 @@ const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 const contacts = ref([])
 async function fetchContacts() {
     try {
-        const res = await axios.get(`${apiBaseUrl}/contacts`);
+        const res = await axios.get(`${apiBaseUrl}/dashboard/contacts`);
         contacts.value = res.data;
     } catch (err) {
         contacts.value = [];
@@ -52,7 +52,7 @@ function handleDelete(contact) {
 }
 async function handleConfirm() {
     try {
-        const res = await axios.post(`${apiBaseUrl}/contacts/delete/${contactToDelete.value.id}`)
+        const res = await axios.post(`${apiBaseUrl}/dashboard/contacts/delete/${contactToDelete.value.id}`)
         if (res.data.success) {
             contacts.value = contacts.value.filter(i => i.id !== contactToDelete.value.id);
             toast.success('Contact deleted successfully.');
