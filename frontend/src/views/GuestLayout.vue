@@ -6,6 +6,6 @@ import Header from '@/components/Header.vue';
 
 <template>
     <Header />
-    <slot />
+    <slot class="max-w-7xl" />
     <Footer />
 </template>

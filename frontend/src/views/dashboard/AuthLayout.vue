@@ -13,7 +13,7 @@ const toggleNav = () => {
 
 <template>
     <Header @toggle-nav="toggleNav" />
-    <div class="flex min-h-[80vh]">
+    <div class="flex justify-center align-middle min-h-[80vh] max-w-[1440px] mx-auto">
         <Sidebar :is-open="navOpen" />
         <main class="m-5 p-5 border-gray border-[1px] rounded-sm w-full text-text-main">
             <slot />
