@@ -2,42 +2,49 @@
 
 namespace App\Controllers\Dashboard;
 
-use App\Core\Controller;
+use App\Core\APIController;
 use App\Models\Contact;
 
-class DashboardContactsController extends Controller
+class DashboardContactsController extends APIController
 {
+    protected $modelClass = Contact::class;
+
     function index($id = null)
     {
-        header('Content-Type: application/json');
-        $contact = new Contact();
+        $contact = $this->getModel();
+
         if ($id !== null) {
             $result = $contact->find($id);
-            echo json_encode($result);
-            return;
+            if ($result) {
+                $this->jsonResponse($result);
+            } else {
+                $this->jsonResponse(['success' => false, 'message' => 'Contact not found.'], 404);
+            }
         }
-        if (isset($_GET['search']) && $_GET['search'] !== '') {
+
+        if (!empty($_GET['search'])) {
             $contacts = $contact->search($_GET['search']);
         } else {
             $contacts = $contact->all();
         }
-        echo json_encode($contacts);
+
+        $this->jsonResponse($contacts, 200);
     }
 
     function delete($id)
     {
-        header('Content-Type: application/json');
-        if ($id) {
-            $contact = new Contact();
-            $existing = $contact->find($id);
-            if ($existing) {
-                $contact->delete($id);
-                echo json_encode(['success' => true, 'message' => 'contact deleted successfully.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'contact not found.']);
-            }
-        } else {
-            echo json_encode(['success' => false, 'message' => 'contact ID missing.']);
+        if (!$id) {
+            $this->jsonResponse(['success' => false, 'message' => 'Contact ID missing.'], 400);
         }
+
+        $contact = $this->getModel();
+        $existing = $contact->find($id);
+
+        if (!$existing) {
+            $this->jsonResponse(['success' => false, 'message' => 'Contact not found.'], 404);
+        }
+
+        $contact->delete($id);
+        $this->jsonResponse(['success' => true, 'message' => 'Contact deleted successfully.'], 200);
     }
 }

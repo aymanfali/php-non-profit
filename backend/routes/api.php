@@ -100,14 +100,14 @@ group($base . '/dashboard', function ($prefix) {
 group($base, function ($prefix) {
     // Impacts
     Router::get("$prefix/impacts", [ImpactsController::class, 'index']);
-    Router::get("$prefix/impacts/{id}", [ImpactsController::class, 'view']);
+    Router::get("$prefix/impacts/{id}", [ImpactsController::class, 'show']);
 
     // News
     Router::get("$prefix/news", [NewsController::class, 'index']);
-    Router::get("$prefix/news/{id}", [NewsController::class, 'view']);
+    Router::get("$prefix/news/{id}", [NewsController::class, 'show']);
 
     // About
-    Router::get("$prefix/about_us", [AboutController::class, 'view']);
+    Router::get("$prefix/about_us", [AboutController::class, 'show']);
 
     // Contacts
     Router::post("$prefix/contacts", [ContactController::class, 'store']);

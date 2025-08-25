@@ -2,44 +2,62 @@
 
 namespace App\Controllers;
 
+use App\Core\APIController;
 use App\Models\News;
 
-class NewsController
+class NewsController extends APIController
 {
-    function index()
+    protected $modelClass = News::class;
+
+    public function index()
     {
-        header('Content-Type: application/json');
-        $new = new News();
+        try {
+            $newsModel = $this->getModel();
+            $news = $newsModel->all();
 
-        $news = $new->all();
-
-        echo json_encode($news);
+            $this->jsonResponse($news, 200);
+        } catch (\Exception $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Failed to fetch news.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    function view($id)
+    public function show($id)
     {
-        $new = new News();
-        if ($id) {
-            $existing = $new->find($id);
+        if (!$id) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'News ID missing.'
+            ], 400);
+        }
+
+        try {
+            $newsModel = $this->getModel();
+            $existing = $newsModel->find($id);
+
             if ($existing) {
-                echo json_encode([
+                $this->jsonResponse([
                     'id' => $existing['id'],
                     'title' => $existing['title'],
                     'image' => $existing['image'],
                     'content' => $existing['content'],
                     'created_at' => $existing['created_at'],
-                ]);
+                ], 200);
             } else {
-                echo json_encode([
+                $this->jsonResponse([
                     'success' => false,
                     'message' => 'News not found.'
-                ]);
+                ], 404);
             }
-        } else {
-            echo json_encode([
+        } catch (\Exception $e) {
+            $this->jsonResponse([
                 'success' => false,
-                'message' => 'News ID missing.'
-            ]);
+                'message' => 'Failed to fetch news.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }
