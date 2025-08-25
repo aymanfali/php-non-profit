@@ -17,6 +17,8 @@ import AdminSettings from "@/views/dashboard/settings/Index.vue";
 
 import AuthLogin from "@/views/auth/login/Index.vue";
 import AuthSignUp from "@/views/auth/registration/Index.vue";
+import NotFound from "@/views/NotFound.vue";
+import ServerError from "@/views/ServerError.vue";
 
 const router = createRouter({
   history: createWebHashHistory(),
@@ -55,6 +57,8 @@ const router = createRouter({
         { path: "/dashboard/settings", component: AdminSettings },
       ],
     },
+    { path: "/:pathMatch(.*)*", name: "NotFound", component: NotFound },
+    { path: "/server-error", name: "ServerError", component: ServerError },
   ],
 });
 
@@ -64,19 +68,19 @@ router.beforeEach(async (to, from, next) => {
     return next();
   }
   try {
-    const res = await fetch(import.meta.env.VITE_API_BASE_URL + '/auth/check', {
-      method: 'GET',
-      credentials: 'include'
+    const res = await fetch(import.meta.env.VITE_API_BASE_URL + "/auth/check", {
+      method: "GET",
+      credentials: "include",
     });
     const result = await res.json();
-    console.log('Auth check response:', result);
+    console.log("Auth check response:", result);
     if (res.ok && result.loggedIn) {
       next();
     } else {
       // next('/login');
     }
   } catch (e) {
-    console.error('Auth check error:', e);
+    console.error("Auth check error:", e);
     // next('/login');
   }
 });
