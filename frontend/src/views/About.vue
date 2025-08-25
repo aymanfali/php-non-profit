@@ -38,7 +38,7 @@ onMounted(fetchData);
             <h1 class="title font-bold mb-5 text-text-sec z-10">About Us</h1>
         </Hero>
 
-        <section v-if="about" class="about-us p-5 text-text-main">
+        <section v-if="about" class="about-us p-5 text-text-main max-w-7xl mx-auto">
             <div class="our-history">
                 <h2 class="title text-center m-8 font-bold text-3xl">Our history</h2>
                 <div class="history flex flex-col justify-center items-center my-8 md:flex-row">
