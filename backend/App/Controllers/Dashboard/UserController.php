@@ -2,109 +2,115 @@
 
 namespace App\Controllers\Dashboard;
 
+use App\Core\APIController;
 use App\Models\User;
 
-class UserController
+class UserController extends APIController
 {
-    // GET /users or /users/{id}
-    function index($id = null)
+    protected $modelClass = User::class;
+
+    public function index($id = null)
     {
-        header('Content-Type: application/json');
-        $user = new User();
+        $user = $this->getModel();
+
         if ($id !== null) {
             $result = $user->find($id);
-            echo json_encode($result);
-            return;
+            if ($result) {
+                $this->jsonResponse($result, 200);
+            } else {
+                $this->jsonResponse(['success' => false, 'message' => 'User not found.'], 404);
+            }
         }
-        if (isset($_GET['search']) && $_GET['search'] !== '') {
+
+        if (!empty($_GET['search'])) {
             $users = $user->search($_GET['search']);
         } else {
             $users = $user->all();
         }
-        echo json_encode($users);
+
+        $this->jsonResponse($users, 200);
     }
 
     function store()
     {
-        header('Content-Type: application/json');
-        $user = new User();
-        $name = $_POST['name'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $role = $_POST['role'] ?? '';
-        $password = $_POST['password'] ?? '';
-        if ($name === '' || $email === '' || $role === '' || $password === '') {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $name = $input['name'] ?? $name;
-            $email = $input['email'] ?? $email;
-            $role = $input['role'] ?? $role;
-            $password = $input['password'] ?? $password;
+        $input = $this->getInput();
+
+        $name = $input['name'] ?? null;
+        $email = $input['email'] ?? null;
+        $role = $input['role'] ?? null;
+        $password = $input['password'] ?? null;
+
+        if (!$name || !$email || !$role || !$password) {
+            $this->jsonResponse(['success' => false, 'message' => 'Missing required fields.'], 400);
         }
-        if ($name && $email && $role && $password) {
-            $created = $user->create(
-                $name,
-                $email,
-                $role,
-                password_hash($password, PASSWORD_DEFAULT)
-            );
-            echo json_encode(['success' => true, 'message' => 'User created successfully.', 'user' => $created]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
-        }
+
+        $user = $this->getModel();
+        $created = $user->create(
+            $name,
+            $email,
+            $role,
+            password_hash($password, PASSWORD_DEFAULT)
+        );
+
+        $this->jsonResponse([
+            'success' => true,
+            'message' => 'User created successfully.',
+            'user' => $created
+        ], 201);
     }
 
-    // POST /users/update/{id}
-    function update($id)
+    public function update($id)
     {
-        header('Content-Type: application/json');
-        $name = $_POST['name'] ?? '';
-        $email = $_POST['email'] ?? '';
-        $role = $_POST['role'] ?? '';
-        $password = $_POST['password'] ?? null;
-        if ($name === '' || $email === '' || $role === '') {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $name = $input['name'] ?? $name;
-            $email = $input['email'] ?? $email;
-            $role = $input['role'] ?? $role;
-            $password = $input['password'] ?? $password;
+        if (!$id) {
+            $this->jsonResponse(['success' => false, 'message' => 'User ID missing.'], 400);
         }
-        $user = new User();
-        if ($password === '') {
-            $password = null;
+
+        $input = $this->getInput();
+
+        $name = $input['name'] ?? null;
+        $email = $input['email'] ?? null;
+        $role = $input['role'] ?? null;
+        $password = $input['password'] ?? null;
+
+        if (!$name || !$email || !$role) {
+            $this->jsonResponse(['success' => false, 'message' => 'Missing required fields.'], 400);
         }
-        if ($id) {
-            $existing = $user->find($id);
-            // Only update password if not empty and not null
-            if ($password !== null) {
-                // If password matches current hash, skip update
-                if (isset($existing['password']) && password_verify($password, $existing['password'])) {
-                    $user->update($id, $name, $email, $role);
-                } else {
-                    $user->update($id, $name, $email, $role, password_hash($password, PASSWORD_DEFAULT));
-                }
-            } else {
+
+        $user = $this->getModel();
+        $existing = $user->find($id);
+
+        if (!$existing) {
+            $this->jsonResponse(['success' => false, 'message' => 'User not found.'], 404);
+        }
+
+        // Handle password update logic
+        if ($password !== null) {
+            if (isset($existing['password']) && password_verify($password, $existing['password'])) {
                 $user->update($id, $name, $email, $role);
+            } else {
+                $user->update($id, $name, $email, $role, password_hash($password, PASSWORD_DEFAULT));
             }
-            echo json_encode(['success' => true, 'message' => 'User updated successfully.']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'User ID missing.']);
+            $user->update($id, $name, $email, $role);
         }
+
+        $this->jsonResponse(['success' => true, 'message' => 'User updated successfully.'], 200);
     }
 
-    // POST /users/delete/{id}
-    function delete($id)
+    public function delete($id)
     {
-        header('Content-Type: application/json');
-        if ($id) {
-            $user = new User();
-            $existing = $user->find($id);
-            if ($existing) {
-                $user->delete($id);
-                echo json_encode(['success' => true, 'message' => 'User deleted successfully.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'User not found.']);
-            }
-        } else {
-            echo json_encode(['success' => false, 'message' => 'User ID missing.']);
+        if (!$id) {
+            $this->jsonResponse(['success' => false, 'message' => 'User ID missing.'], 400);
         }
+
+        $user = $this->getModel();
+        $existing = $user->find($id);
+
+        if (!$existing) {
+            $this->jsonResponse(['success' => false, 'message' => 'User not found.'], 404);
+        }
+
+        $user->delete($id);
+        $this->jsonResponse(['success' => true, 'message' => 'User deleted successfully.'], 200);
     }
 }

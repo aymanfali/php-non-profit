@@ -2,91 +2,72 @@
 
 namespace App\Controllers\Dashboard;
 
-use App\Core\Controller;
+use App\Core\APIController;
 use App\Models\News;
 
-class DashboardNewsController extends Controller
+class DashboardNewsController extends APIController
 {
+    protected $modelClass = News::class;
+
     function index($id = null)
     {
-        header('Content-Type: application/json');
-        $news = new News();
+        $news = $this->getModel();
         if ($id !== null) {
             $result = $news->find($id);
-            echo json_encode($result);
-            return;
+            if ($result) {
+                $this->jsonResponse($result, 200);
+            }
+            $this->jsonResponse(['success' => false, 'message' => 'News not found.'], 404);
         }
         if (isset($_GET['search']) && $_GET['search'] !== '') {
             $newss = $news->search($_GET['search']);
         } else {
             $newss = $news->all();
         }
-        echo json_encode($newss);
+        $this->jsonResponse($newss, 200);
     }
 
     function store()
     {
-        header('Content-Type: application/json');
-        $news = new News();
-        $title = $_POST['title'] ?? '';
-        $image = $_POST['image'] ?? '';
-        $content = $_POST['content'] ?? '';
-        if ($title === '' || $image === '' || $content === '') {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $title = $input['title'] ?? $title;
-            $image = $input['image'] ?? $image;
-            $content = $input['content'] ?? $content;
+        $news = $this->getModel();
+        $input = $this->getInput();
+        if (empty($input['title'] ?? '') || empty($input['image'] ?? '') || empty($input['content'] ?? '')) {
+            $this->jsonResponse(['success' => false, 'message' => 'Missing required fields.'], 400);  // Bad Request
         }
-        if ($title && $image && $content) {
-            $created = $news->create(
-                $title,
-                $image,
-                $content,
-            );
-            echo json_encode(['success' => true, 'message' => 'news created successfully.', 'news' => $created]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Missing required fields.']);
-        }
+
+        $created = $news->create($input['title'], $input['image'], $input['content']);
+        $this->jsonResponse(['success' => true, 'message' => 'News created successfully.', 'news' => $created], 201); // Created
     }
 
     function update($id)
     {
-        header('Content-Type: application/json');
-        $title = $_POST['title'] ?? '';
-        $image = $_POST['image'] ?? '';
-        $content = $_POST['content'] ?? '';
-        if ($title === '' || $image === '' || $content === '') {
-            $input = json_decode(file_get_contents('php://input'), true);
-            $title = $input['title'] ?? $title;
-            $image = $input['image'] ?? $image;
-            $content = $input['content'] ?? $content;
+        $news = $this->getModel();
+        $input = $this->getInput();
+        $existing = $news->find($id);
+        if (!$existing) {
+            $this->jsonResponse(['success' => false, 'message' => 'News not found.'], 404);
         }
-        $news = new News();
-        if ($id) {
-            $existing = $news->find($id);
-            if ($existing) {
-                $news->update($id, $title, $image, $content);
-            }
-            echo json_encode(['success' => true, 'message' => 'news updated successfully.']);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'news ID missing.']);
-        }
+
+        $news->update(
+            $id,
+            $input['title'] ?? $existing['title'],
+            $input['image'] ?? $existing['image'],
+            $input['content'] ?? $existing['content']
+        );
+
+        $this->jsonResponse(['success' => true, 'message' => 'News updated successfully.'], 200); // OK
     }
 
     function delete($id)
     {
-        header('Content-Type: application/json');
-        if ($id) {
-            $news = new News();
-            $existing = $news->find($id);
-            if ($existing) {
-                $news->delete($id);
-                echo json_encode(['success' => true, 'message' => 'news deleted successfully.']);
-            } else {
-                echo json_encode(['success' => false, 'message' => 'news not found.']);
-            }
-        } else {
-            echo json_encode(['success' => false, 'message' => 'news ID missing.']);
+        $news = $this->getModel();
+        $existing = $news->find($id);
+
+        if (!$existing) {
+            $this->jsonResponse(['success' => false, 'message' => 'News not found.'], 404);
         }
+
+        $news->delete($id);
+        $this->jsonResponse(['success' => true, 'message' => 'News deleted successfully.'], 200); // OK
     }
 }

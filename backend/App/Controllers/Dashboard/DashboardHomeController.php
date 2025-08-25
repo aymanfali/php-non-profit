@@ -2,31 +2,26 @@
 
 namespace App\Controllers\Dashboard;
 
-use App\Core\Controller;
+use App\Core\APIController;
 use App\Models\Contact;
 use App\Models\Impacts;
 use App\Models\News;
 use App\Models\User;
 
-class DashboardHomeController extends Controller
+class DashboardHomeController extends APIController
 {
     function index()
     {
-        $usersCount = new User();
-        $newsCount = new News();
-        $impactsCount = new Impacts();
-        $messagesCount = new Contact();
+        $users = (new User())->countUsers();
+        $news = (new News())->countNews();
+        $impacts = (new Impacts())->countImpacts();
+        $messages = (new Contact())->countMessages();
 
-        $users = $usersCount->countUsers();
-        $news = $newsCount->countNews();
-        $impacts = $impactsCount->countImpacts();
-        $messages = $messagesCount->countMessages();
-
-        echo json_encode([
+        $this->jsonResponse([
             'users' => $users,
             'news' => $news,
             'impacts' => $impacts,
             'messages' => $messages
-        ]);
+        ], 200);
     }
 }

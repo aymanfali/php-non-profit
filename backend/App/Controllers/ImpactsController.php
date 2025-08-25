@@ -2,44 +2,62 @@
 
 namespace App\Controllers;
 
+use App\Core\APIController;
 use App\Models\Impacts;
 
-class ImpactsController
+class ImpactsController extends APIController
 {
-    function index()
+    protected $modelClass = Impacts::class;
+
+    public function index()
     {
-        header('Content-Type: application/json');
-        $impact = new Impacts();
+        try {
+            $impact = $this->getModel();
+            $impacts = $impact->all();
 
-        $impacts = $impact->all();
-
-        echo json_encode($impacts);
+            $this->jsonResponse($impacts, 200);
+        } catch (\Exception $e) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Failed to fetch impacts.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    function view($id)
+    public function show($id)
     {
-        $impact = new Impacts();
-        if ($id) {
+        if (!$id) {
+            $this->jsonResponse([
+                'success' => false,
+                'message' => 'Impact ID missing.'
+            ], 400);
+        }
+
+        try {
+            $impact = $this->getModel();
             $existing = $impact->find($id);
+
             if ($existing) {
-                echo json_encode([
+                $this->jsonResponse([
                     'id' => $existing['id'],
                     'title' => $existing['title'],
                     'image' => $existing['image'],
                     'content' => $existing['content'],
                     'created_at' => $existing['created_at'],
-                ]);
+                ], 200);
             } else {
-                echo json_encode([
+                $this->jsonResponse([
                     'success' => false,
                     'message' => 'Impact not found.'
-                ]);
+                ], 404);
             }
-        } else {
-            echo json_encode([
+        } catch (\Exception $e) {
+            $this->jsonResponse([
                 'success' => false,
-                'message' => 'Impact ID missing.'
-            ]);
+                'message' => 'Failed to fetch impact.',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }
